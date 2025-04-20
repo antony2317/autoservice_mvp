@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-body">
+            <h2>Подтверждение записи</h2>
+            <p>Вы подтверждаете запись в {{ object.garage.name }}?</p>
+            <p><strong>Дата:</strong> {{ object.proposed_time|date:"d.m.Y H:i" }}</p>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success">Подтвердить</button>
+                <a href="{% url 'request_detail' object.repair_request.pk %}" class="btn btn-secondary">
+                    Отмена
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'repairs/css/respond.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="respond-wrapper">
+    <h2>Ответ на заявку #{{ repair_request.id }}</h2>
+
+    <div class="repair-info">
+        <p><strong>Пользователь:</strong> {{ repair_request.user.username }}</p>
+        <p><strong>Автомобиль:</strong> {{ repair_request.car }}</p>
+        <p><strong>Описание проблемы:</strong> {{ repair_request.description }}</p>
+    </div>
+
+    <form method="post" class="respond-form">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% for error in field.errors %}
+                    <div class="form-error">{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary">Отправить предложение</button>
+    </form>
+</div>
+{% endblock %}

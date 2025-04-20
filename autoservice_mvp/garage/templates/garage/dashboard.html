@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'garage/css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Для обычных пользователей -->
+    {% if not user.is_staff %}
+    <section class="user-section">
+        <h2>Мои автомобили</h2>
+        <div class="car-list">
+            {% for car in user.cars.all %}
+            <div class="car-card">
+                <h3>{{ car.brand }} {{ car.model }}</h3>
+                <p>Год: {{ car.year }} | Пробег: {{ car.mileage }} км</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <h2>Активные заявки</h2>
+        <div class="requests-list">
+            {% for request in user_requests %}
+            <div class="request-card request-{{ request.status }}">
+                <p><strong>Авто:</strong> {{ request.car.brand }} {{ request.car.model }}</p>
+                <p><strong>Статус:</strong> {{ request.get_status_display }}</p>
+                <a href="{% url 'request_detail' request.id %}" class="btn-details">Подробнее</a>
+            </div>
+            {% empty %}
+            <p class="no-requests">Нет активных заявок</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Для автосервисов (админов) -->
+    {% else %}
+    <section class="admin-section">
+        <h2>Новые заявки на ремонт</h2>
+        <div class="admin-requests">
+            {% for request in active_requests %}
+            <div class="admin-request-card">
+                <p><strong>Клиент:</strong> {{ request.user.get_full_name }}</p>
+                <p><strong>Авто:</strong> {{ request.car.brand }} {{ request.car.model }}</p>
+                <p><strong>Описание:</strong> {{ request.description|truncatechars:50 }}</p>
+                <a href="{% url 'request_detail' request.id %}" class="btn-respond">Ответить</a>
+            </div>
+            {% empty %}
+            <p class="no-requests">Нет новых заявок</p>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}

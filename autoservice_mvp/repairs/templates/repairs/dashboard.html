@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'repairs/css/dashboard.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="repair-requests-container">
+
+
+    <!-- Новые заявки -->
+    <div id="new-requests" class="requests-tab-content active">
+        <h2><i class="fas fa-inbox"></i> Новые заявки</h2>
+
+        {% if new_requests %}
+        <div class="requests-list">
+            {% for req in new_requests %}
+            <div class="request-card" id="request-{{ req.id }}">
+                <div class="request-header">
+                    <span class="request-user">{{ req.user.get_full_name|default:req.user.username }}</span>
+                    <span class="request-date">{{ req.created_at|date:"d.m.Y H:i" }}</span>
+                </div>
+                <div class="request-body">
+                    <p><strong>Авто:</strong> {{ req.car.brand }} {{ req.car.model }}</p>
+                    <p><strong>Проблема:</strong> {{ req.description }}</p>
+
+                    <form method="post" action="{% url 'repairs:respond_to_request' req.id %}" class="response-form">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label>Цена (₽)</label>
+                            <input type="number" name="proposed_price" required min="1" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label>Дата ремонта</label>
+                            <input type="date" name="proposed_date" required min="{{ today|date:'Y-m-d' }}">
+                        </div>
+                        <button type="submit" class="submit-btn">
+                            <i class="fas fa-paper-plane"></i> Отправить предложение
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-requests">
+            <i class="fas fa-check-circle"></i>
+            <p>Нет новых заявок</p>
+        </div>
+        {% endif %}
+    </div>
+
+
+</div>
+
+<!-- Модальное окно для уведомлений -->
+<div id="notification-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <div id="modal-message"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Управление вкладками
+    const tabs = document.querySelectorAll('.tab-btn');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            tabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+
+            document.querySelectorAll('.requests-tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(this.dataset.tab).classList.add('active');
+        });
+    });
+
+    // Обработка отправки форм
+    document.querySelectorAll('.response-form').forEach(form => {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const requestCard = this.closest('.request-card');
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Отправка...';
+
+            try {
+                const response = await fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showModal('Ваше предложение успешно отправлено!');
+                    requestCard.remove();
+
+                    // Обновляем список если нет заявок
+                    if (!document.querySelector('#new-requests .request-card')) {
+                        document.querySelector('#new-requests .requests-list').innerHTML = `
+                            <div class="no-requests">
+                                <i class="fas fa-check-circle"></i>
+                                <p>Нет новых заявок</p>
+                            </div>
+                        `;
+                    }
+                } else {
+                    showModal(result.error || 'Произошла ошибка', true);
+                }
+            } catch (error) {
+                showModal('Ошибка сети: ' + error.message, true);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Отправить предложение';
+            }
+        });
+    });
+
+    // Функция показа модального окна
+    function showModal(message, isError = false) {
+        const modal = document.getElementById('notification-modal');
+        const modalContent = modal.querySelector('.modal-content');
+        const messageEl = document.getElementById('modal-message');
+
+        if (isError) {
+            modalContent.classList.add('error');
+        } else {
+            modalContent.classList.remove('error');
+        }
+
+        messageEl.textContent = message;
+        modal.style.display = 'block';
+
+        // Автоматическое закрытие через 5 секунд
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 5000);
+    }
+
+    // Закрытие модального окна
+    document.querySelector('.close-modal').addEventListener('click', function() {
+        document.getElementById('notification-modal').style.display = 'none';
+    });
+});
+</script>
+{% endblock %}

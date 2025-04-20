@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'garage/css/list.css' %}">
+<link rel="stylesheet" href="{% static 'repairs/css/requests.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="garage-content">
+    <h2 class="garage-title">Мои автомобили</h2>
+
+    {% if cars %}
+    <ul class="car-list">
+        {% for car in cars %}
+        <li class="car-item">
+            <a href="{% url 'car_detail' car.pk %}" class="car-link">
+                {{ car.brand }} {{ car.model }} ({{ car.year }})
+            </a>
+            <span class="mileage-badge">{{ car.mileage }} км</span>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="no-cars-message">У вас пока нет автомобилей</p>
+    {% endif %}
+
+    <a href="{% url 'add_car' %}" class="btn btn-primary">Добавить авто</a>
+
+    <!-- Секция заявок -->
+    <div class="requests-section">
+        <h2 class="requests-title">Мои заявки на ремонт</h2>
+
+        {% if repair_requests %}
+        <ul class="requests-list">
+            {% for request in repair_requests %}
+            <li class="request-item request-{{ request.status }}">
+                <div class="request-header">
+                    <span class="request-id">Заявка #{{ request.id }}</span>
+                    <span class="request-status">{{ request.get_status_display }}</span>
+                </div>
+                <p class="request-car">{{ request.car.brand }} {{ request.car.model }}</p>
+                <p class="request-desc">{{ request.description|truncatechars:100 }}</p>
+                <p class="request-date">Создано: {{ request.created_at|date:"d.m.Y H:i" }}</p>
+
+                <!-- Блок ответов автосервисов -->
+                {% if request.responses.all %}
+                <div class="responses-block">
+                    <h4>Ответы автосервисов:</h4>
+
+                    {% for resp in request.responses.all %}
+                        {% if resp.is_accepted or not request.has_accepted_response %}
+                        <div class="response {% if resp.is_accepted %}response-accepted{% endif %}">
+                            <p><strong>Сервис:</strong> {{ resp.service.username }}</p>
+                            <p><strong>Цена:</strong> {{ resp.proposed_price }}₽</p>
+                            <p><strong>Дата ремонта:</strong> {{ resp.proposed_date|date:"d.m.Y" }}</p>
+                            {% if not resp.is_accepted and not request.has_accepted_response %}
+                                <form method="post" action="{% url 'repairs:accept_response' resp.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-accept">Принять предложение</button>
+                                </form>
+                            {% elif resp.is_accepted %}
+                                <span class="accepted-badge">✅ Принято</span>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                {% else %}
+                    <p class="no-responses">Нет ответов от автосервисов</p>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="no-requests-message">У вас пока нет заявок</p>
+        {% endif %}
+
+        <a href="{% url 'repairs:create_request' %}" class="btn-new-request">
+            Создать новую заявку
+        </a>
+    </div>
+</div>
+{% endblock %}

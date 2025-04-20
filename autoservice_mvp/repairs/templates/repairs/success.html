@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="alert alert-success">
+        <h4 class="alert-heading">Заявка успешно создана!</h4>
+        <p>Мы свяжемся с вами в ближайшее время.</p>
+        <hr>
+        <a href="{% url 'repairs:create_request' %}" class="btn btn-primary">
+            Создать новую заявку
+        </a>
+    </div>
+</div>
+{% endblock %}

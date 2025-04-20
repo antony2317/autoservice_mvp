@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'garage/css/add_car.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="add-car-wrapper">
+    <h2 class="add-car-title">Добавить автомобиль</h2>
+
+    <form method="post" class="add-car-form">
+        {% csrf_token %}
+
+        {% for field in form %}
+        <div class="form-field">
+            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}
+                <span class="form-hint">{{ field.help_text }}</span>
+            {% endif %}
+            {% for error in field.errors %}
+                <span class="form-error">{{ error }}</span>
+            {% endfor %}
+        </div>
+        {% endfor %}
+
+        <div class="form-actions">
+            <button type="submit" class="form-submit-btn">Сохранить</button>
+        </div>
+    </form>
+</div>
+
+<datalist id="model_list">
+    <!-- Сюда будут добавлены модели через JS -->
+</datalist>
+
+
+<script>
+function loadModels() {
+    const brand = document.getElementById('id_brand').value;
+    const modelInput = document.getElementById('id_model');
+    const datalist = document.getElementById('model_list');
+
+    modelInput.disabled = true;
+    datalist.innerHTML = '';
+
+    fetch(`/garage/ajax/get-models/?brand=${brand}`)
+        .then(response => response.json())
+        .then(models => {
+            models.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model;
+                datalist.appendChild(option);
+            });
+            modelInput.disabled = false;
+        })
+        .catch(error => {
+            console.error('Ошибка загрузки моделей:', error);
+        });
+}
+</script>
+
+{% endblock %}

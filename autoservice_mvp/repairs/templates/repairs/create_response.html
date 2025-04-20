@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Ответ на заявку</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            {{ form.message.label_tag }}
+            {{ form.message }}
+        </div>
+        <div class="form-group">
+            {{ form.proposed_time.label_tag }}
+            <input type="datetime-local" name="proposed_time" class="form-control">
+        </div>
+        <div class="form-group">
+            {{ form.price_estimate.label_tag }}
+            {{ form.price_estimate }}
+        </div>
+        <button type="submit" class="btn btn-primary">Отправить</button>
+    </form>
+</div>
+{% endblock %}

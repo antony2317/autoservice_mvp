@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'garage/css/add_service_record.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="service-form-container">
+    <h2>Добавить запись о ТО</h2>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- Скрываем стандартное поле garage и заменяем своим -->
+        <input type="hidden" name="garage" id="id_garage" value="{{ form.garage.value|default_if_none:'' }}">
+
+        <!-- Группа полей формы -->
+        <div class="form-fields">
+            <!-- Поле для гаража -->
+            <div class="form-group garage-group">
+                <label for="id_garage_name">Автосервис</label>
+                <input type="text" name="garage_name" id="id_garage_name"
+                       list="garage_list" autocomplete="off"
+                       class="form-control"
+                       value="{{ form.garage_name.value|default_if_none:'' }}"
+                       placeholder="Начните вводить название">
+                <datalist id="garage_list">
+                    {% for garage in garages %}
+                    <option value="{{ garage.name }}" data-id="{{ garage.id }}">
+                    {% endfor %}
+                </datalist>
+                {% if form.garage_name.errors %}
+                    <div class="error-message">{{ form.garage_name.errors }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Остальные поля формы (кроме garage) -->
+            {% for field in form %}
+                {% if field.name != 'garage' and field.name != 'garage_name' %}
+                <div class="form-group">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="error-message">{{ field.errors }}</div>
+                    {% endif %}
+                    {% if field.help_text %}
+                        <small class="form-help">{{ field.help_text }}</small>
+                    {% endif %}
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const garageInput = document.getElementById('id_garage_name');
+    const garageHidden = document.getElementById('id_garage');
+    const datalist = document.getElementById('garage_list');
+
+    // Обработка выбора из списка
+    garageInput.addEventListener('input', function() {
+        const selectedOption = Array.from(datalist.options).find(
+            option => option.value === this.value
+        );
+
+        if (selectedOption) {
+            garageHidden.value = selectedOption.dataset.id;
+        } else {
+            garageHidden.value = '';
+        }
+    });
+
+    // AJAX поиск при вводе
+    garageInput.addEventListener('input', debounce(function() {
+        if(this.value.length > 1) {
+            fetch(`/api/garages/?search=${encodeURIComponent(this.value)}`)
+                .then(response => response.json())
+                .then(data => {
+                    datalist.innerHTML = '';
+                    data.forEach(garage => {
+                        const option = document.createElement('option');
+                        option.value = garage.name;
+                        option.dataset.id = garage.id;
+                        datalist.appendChild(option);
+                    });
+                });
+        }
+    }, 300));
+
+    // Функция для дебаунса
+    function debounce(func, wait) {
+        let timeout;
+        return function() {
+            const context = this, args = arguments;
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(context, args), wait);
+        };
+    }
+});
+</script>
+{% endblock %}

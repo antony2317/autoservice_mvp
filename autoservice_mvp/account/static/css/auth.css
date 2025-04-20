@@ -1,0 +1,199 @@
+/* Auth Styles */
+.auth-container {
+    max-width: 450px;
+    margin: 4rem auto;
+    padding: 4rem;
+    border-radius: var(--rounded-lg);
+    background-color: white;
+    box-shadow: var(--shadow-md);
+    border: 1px solid #e2e8f0;
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.auth-header h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 0.5rem;
+}
+
+.text-gray {
+    color: var(--gray);
+}
+
+.auth-form {
+    margin-top: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--dark);
+}
+
+.form-group input {
+    width: 100%;
+    padding: 15px 20px;
+    margin: 10px 0;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.form-group input:focus {
+    border-color: #4a80f0;
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(74, 128, 240, 0.2);
+    outline: none;
+}
+
+.form-error {
+    color: #ef4444;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.w-full {
+    width: 100%;
+}
+
+.auth-footer {
+    margin-top: 1.5rem;
+    text-align: center;
+    font-size: 0.9375rem;
+}
+
+.textarea-input {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.text-primary {
+    color: var(--primary);
+}
+
+.hover\:underline:hover {
+    text-decoration: underline;
+}
+
+/* Добавьте эти стили в auth.css */
+.form-help {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: var(--gray);
+}
+
+/* Стили для сообщений (ошибки, успех) */
+.messages {
+    margin-bottom: 1.5rem;
+}
+
+.message {
+    padding: 0.75rem 1rem;
+    border-radius: var(--rounded-lg);
+    margin-bottom: 0.5rem;
+}
+
+.message.success {
+    background-color: #f0fdf4;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+
+.message.error {
+    background-color: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+
+/* Стили для обязательных полей */
+.required {
+    color: #ef4444;
+    margin-left: 3px;
+}
+
+/* Стили для полей ввода файлов */
+.form-group input[type="file"] {
+    padding: 0.5rem;
+    border: 1px dashed #cbd5e1;
+    background-color: #f8fafc;
+}
+
+/* Специфичные стили для страницы регистрации сервиса */
+.service-register .auth-container {
+    max-width: 600px; /* Можно увеличить ширину для большего количества полей */
+}
+
+.service-register .form-group {
+    margin-bottom: 1.5rem;
+}
+
+/* Стили для формы */
+.form-control {
+    width: 100%;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    transition: all 0.3s;
+}
+
+.form-control:focus {
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+}
+
+.help-text {
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: -8px;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.error-list {
+    color: #e74c3c;
+    font-size: 0.85rem;
+    margin-top: -8px;
+    margin-bottom: 15px;
+}
+
+.textarea-input {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.password-input {
+    letter-spacing: 1px;
+}
+
+.form-group label {
+    display: block;
+    margin: 15px 0 8px;
+    font-weight: 600;
+    color: #333;
+    font-size: 15px;
+}
+
+@keyframes input-focus {
+    from { box-shadow: 0 0 0 0 rgba(74, 128, 240, 0); }
+    to { box-shadow: 0 0 0 3px rgba(74, 128, 240, 0.2); }
+}
+
+.form-input:focus {
+    animation: input-focus 0.3s ease-out;
+}
+

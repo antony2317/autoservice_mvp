@@ -1,0 +1,31 @@
+<!-- chat.html -->
+<h2>Чат</h2>
+<div id="chat-log"></div>
+<input id="chat-message-input" type="text" autocomplete="off">
+<button id="chat-message-submit">Отправить</button>
+
+<script>
+    const roomName = "{{ room_name }}";
+    const sender = "{{ request.user.username }}";
+    const receiver = "{{ receiver_username }}"; // передай из view
+
+    const chatSocket = new WebSocket(
+        "ws://" + window.location.host + "/ws/chat/" + roomName + "/"
+    );
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        document.querySelector("#chat-log").innerHTML += `<p><b>${data.sender}</b>: ${data.message}</p>`;
+    };
+
+    document.querySelector("#chat-message-submit").onclick = function(e) {
+        const messageInputDom = document.querySelector("#chat-message-input");
+        const message = messageInputDom.value;
+        chatSocket.send(JSON.stringify({
+            "message": message,
+            "sender": sender,
+            "receiver": receiver
+        }));
+        messageInputDom.value = "";
+    };
+</script>

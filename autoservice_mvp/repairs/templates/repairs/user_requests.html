@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Мои заявки</h2>
+
+{% for req in repair_requests %}
+<div class="request-block">
+    <p><strong>Авто:</strong> {{ req.car }}</p>
+    <p><strong>Описание:</strong> {{ req.description }}</p>
+    <p><strong>Статус:</strong> {{ req.get_status_display }}</p>
+
+    {% if req.responses.all %}
+        <h4>Ответы автосервисов:</h4>
+        {% for resp in req.responses.all %}
+            <div class="response">
+                <p><strong>Сервис:</strong> {{ resp.service.username }}</p>
+                <p><strong>Цена:</strong> {{ resp.proposed_price }}₽</p>
+                <p><strong>Дата:</strong> {{ resp.proposed_date }}</p>
+
+                {% for resp in req.responses.all %}
+                    <p>DEBUG: Service ID = {{ resp.service.id }}, Service Username = {{ resp.service.username }}</p>
+                    <!-- Кнопка чата -->
+                    <a href="{% url 'chat_room' request_id=req.id other_user_id=resp.service.id %}"
+                       class="btn btn-outline-primary mb-2">
+                        💬 Чат с {{ resp.service.username }}
+                    </a>
+                {% endfor %}
+
+                {% if not resp.is_accepted %}
+                    <form method="post" action="{% url 'repairs:accept_response' resp.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success">Принять предложение</button>
+                    </form>
+                {% else %}
+                    <span class="accepted">✅ Принято</span>
+                {% endif %}
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>Нет ответов</p>
+    {% endif %}
+</div>
+<hr>
+{% endfor %}
+{% endblock %}
+

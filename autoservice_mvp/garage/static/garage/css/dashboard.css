@@ -1,0 +1,66 @@
+.dashboard-container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+}
+
+/* Стили для пользователей */
+.user-section {
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.car-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.car-card {
+    background: white;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* Стили для заявок */
+.request-card {
+    background: white;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-left: 4px solid #ddd;
+    border-radius: 4px;
+}
+
+.request-pending {
+    border-left-color: #ffc107; /* Желтый для ожидания */
+}
+.request-accepted {
+    border-left-color: #28a745; /* Зеленый для принятых */
+}
+
+/* Стили для админ-панели */
+.admin-request-card {
+    background: white;
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+}
+
+.btn-details, .btn-respond {
+    display: inline-block;
+    padding: 5px 10px;
+    background: #007bff;
+    color: white;
+    border-radius: 3px;
+    text-decoration: none;
+    margin-top: 10px;
+}
+
+.no-requests {
+    color: #6c757d;
+    font-style: italic;
+}

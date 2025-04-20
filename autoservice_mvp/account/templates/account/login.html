@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-container animate">
+    <div class="auth-header">
+        <h2>Вход в систему</h2>
+        <p class="text-gray">Пожалуйста, введите свои учетные данные</p>
+    </div>
+
+    <form method="post" class="auth-form">
+        {% csrf_token %}
+
+        {% for field in form %}
+        <div class="form-group">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+            <div class="form-error">{{ field.errors }}</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <button type="submit" class="btn btn-primary w-full">Войти</button>
+    </form>
+
+    <div class="auth-footer">
+        <p class="text-gray">Нет аккаунта?
+            <a href="{% url 'account:user_register' %}" class="text-primary hover:underline">Регистрация пользователя</a> |
+            <a href="{% url 'account:service_register' %}" class="text-primary hover:underline">Регистрация сервиса</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

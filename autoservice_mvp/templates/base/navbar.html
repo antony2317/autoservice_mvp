@@ -1,0 +1,62 @@
+<nav class="navbar">
+    <a href="{% url 'home' %}" class="logo">AutoService</a>
+
+    <ul class="nav-menu">
+        {% if user.is_authenticated %}
+            {% if user.is_service %}
+                <!-- Навигация для автосервиса -->
+                <li>
+                    <a href="{% url 'repairs:service_dashboard' %}"
+                       class="nav-link {% if 'dashboard' in request.path %}active{% endif %}">
+                       Новые заявки
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'repairs:accepted_requests' %}"
+                       class="nav-link {% if 'accepted' in request.path %}active{% endif %}">
+                       Принятые заявки
+                    </a>
+                </li>
+            {% else %}
+                <!-- Навигация для автовладельца -->
+                <li>
+                    <a href="{% url 'home' %}"
+                       class="nav-link {% if request.path == '/' %}active{% endif %}">
+                       Главная
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'garage' %}"
+                       class="nav-link {% if '/garage/' in request.path %}active{% endif %}">
+                       Гараж
+                    </a>
+                </li>
+
+            {% endif %}
+        {% else %}
+            <!-- Для неавторизованных пользователей -->
+            <li>
+                <a href="{% url 'home' %}"
+                   class="nav-link {% if request.path == '/' %}active{% endif %}">
+                   Главная
+                </a>
+            </li>
+        {% endif %}
+    </ul>
+
+    <div class="auth-buttons">
+        {% if user.is_authenticated %}
+            <span class="username">Привет, {{ user.username }}!</span>
+            <a href="{% url 'account:logout' %}" class="btn btn-outline">Выйти</a>
+        {% else %}
+            <a href="{% url 'account:login' %}" class="btn btn-outline">Войти</a>
+            <a href="{% url 'account:user_register' %}" class="btn btn-primary">Регистрация</a>
+        {% endif %}
+    </div>
+
+    <div class="hamburger">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+    </div>
+</nav>

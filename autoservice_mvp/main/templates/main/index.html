@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Главная страница | AutoService MVP{% endblock %}
+
+{% block extra_head %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+
+<!-- Герой-секция -->
+<section class="hero">
+  <div class="hero-content">
+    <h1 class="animate">Сервис для тех, кто ценит свое время</h1>
+    <p class="animate delay-1">Записывайтесь на ремонт онлайн, отслеживайте историю обслуживания и получайте персональные рекомендации</p>
+    <div class="hero-buttons animate delay-2">
+      {% if user.is_authenticated %}
+        <a href="{% url 'repairs:create_request' %}" class="btn btn-primary">Оставить заявку на ремонт</a>
+      {% else %}
+        <a href="{% url 'account:login' %}" class="btn btn-primary">Войти</a>
+        <a href="{% url 'account:user_register' %}" class="btn btn-outline">Зарегистрироваться</a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- Секция возможностей -->
+<section class="features" id="features">
+  <div class="features-container">
+    <div class="section-header animate">
+      <h2>Почему выбирают нас</h2>
+      <p>Современный подход к обслуживанию автомобилей</p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card animate delay-1">
+        <div class="feature-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+          </svg>
+        </div>
+        <h3>Мгновенная запись</h3>
+        <p>Выбирайте удобное время и записывайтесь на сервис без звонков и очередей</p>
+      </div>
+
+      <div class="feature-card animate delay-2">
+        <div class="feature-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </div>
+        <h3>Персональный подход</h3>
+        <p>Рекомендации по обслуживанию, основанные на истории вашего автомобиля</p>
+      </div>
+
+      <div class="feature-card animate delay-3">
+        <div class="feature-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 8v4l3 3"></path>
+          </svg>
+        </div>
+        <h3>Прозрачность</h3>
+        <p>Полная история всех работ и затрат всегда под рукой</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA секция -->
+{% if not user.is_authenticated %}
+<section class="cta">
+  <div class="cta-container animate">
+    <h2>Готовы попробовать?</h2>
+    <p>Зарегистрируйтесь сейчас и получите скидку 15% на первое обслуживание</p>
+    <div class="cta-buttons">
+      <a href="{% url 'account:user_register' %}" class="btn">Я клиент</a>
+      <a href="{% url 'account:service_register' %}" class="btn btn-outline">Я автосервис</a>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Заявка #{{ request.id }}</h2>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">{{ request.car }}</h5>
+            <p class="card-text">{{ request.description }}</p>
+            <p class="text-muted">Статус: {{ request.get_status_display }}</p>
+            
+            {% if request.responses.all %}
+            <h4>Предложения сервисов:</h4>
+            <ul class="list-group">
+                {% for response in request.responses.all %}
+                <li class="list-group-item">
+                    <strong>{{ response.garage.name }}</strong><br>
+                    {{ response.message }}<br>
+                    <small>Предложенное время: {{ response.proposed_time|date:"d.m.Y H:i" }}</small>
+                    <a href="{% url 'accept_response' response.pk %}" class="btn btn-sm btn-success float-right">
+                        Принять
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'repairs/css/accepted_responses.css' %}">
+{% endblock %}
+{% block content %}
+<div class="accepted-responses-container">
+    <h2>Принятые заявки</h2>
+
+    {% if responses %}
+        <div class="responses-list">
+            {% for response in responses %}
+                <div class="response-card">
+                    <div class="response-header">
+                        <div class="response-id">Заявка #{{ response.repair_request.id }}</div>
+                        <div class="response-badge">Подтверждено</div>
+                    </div>
+                    <div class="response-body">
+                        <p><strong>Клиент:</strong> {{ response.repair_request.user.username }}</p>
+                        <p><strong>Автомобиль:</strong> {{ response.repair_request.car }}</p>
+                        <p><strong>Описание:</strong> {{ response.repair_request.description }}</p>
+                        <p><strong>Цена:</strong> {{ response.proposed_price }} ₽</p>
+                        <p><strong>Дата ремонта:</strong> {{ response.proposed_date }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="no-responses">
+            <p>Нет подтвержденных заявок.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

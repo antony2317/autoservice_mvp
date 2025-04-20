@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Чат с {{ receiver.username }}</h2>
+    
+    <div id="chat-messages" class="border rounded p-3 mb-3" style="height: 500px; overflow-y: auto;">
+        {% for message in request.user.sent_messages.all|add:request.user.received_messages.all|dictsort:"timestamp" %}
+            <div class="mb-3 {% if message.sender == request.user %}text-end{% endif %}">
+                <div class="d-inline-block p-2 rounded {% if message.sender == request.user %}bg-primary text-white{% else %}bg-light{% endif %}">
+                    <div><strong>{{ message.sender.username }}</strong></div>
+                    <div>{{ message.message }}</div>
+                    <small class="text-muted">{{ message.timestamp|time:"H:i" }}</small>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="input-group mb-3">
+        <input id="chat-message-input" type="text" class="form-control" placeholder="Ваше сообщение...">
+        <button id="chat-message-submit" class="btn btn-primary">Отправить</button>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const roomName = "{{ request.user.id }}_{{ receiver.id }}";
+    const chatSocket = new WebSocket(
+        'ws://' + window.location.host + '/ws/chat/' + roomName + '/'
+    );
+    const messagesContainer = document.getElementById('chat-messages');
+    
+    chatSocket.onopen = function(e) {
+        console.log("WebSocket подключён!");
+    };
+    
+    chatSocket.onclose = function(e) {
+        console.error("WebSocket отключён", e);
+    };
+    
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const messageElement = document.createElement('div');
+        messageElement.className = `mb-3 ${data.sender_id == {{ request.user.id }} ? 'text-end' : ''}`;
+        
+        messageElement.innerHTML = `
+            <div class="d-inline-block p-2 rounded ${data.sender_id == {{ request.user.id }} ? 'bg-primary text-white' : 'bg-light'}">
+                <div><strong>${data.sender_id == {{ request.user.id }} ? 'Вы' : '{{ receiver.username }}'}</strong></div>
+                <div>${data.message}</div>
+                <small class="text-muted">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</small>
+            </div>
+        `;
+        
+        messagesContainer.appendChild(messageElement);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    };
+    
+    function sendMessage() {
+        const messageInput = document.getElementById('chat-message-input');
+        const message = messageInput.value.trim();
+        
+        if (message) {
+            chatSocket.send(JSON.stringify({
+                'message': message,
+                'sender_id': {{ request.user.id }},
+                'receiver_id': {{ receiver.id }}
+            }));
+            messageInput.value = '';
+        }
+    }
+    
+    document.getElementById('chat-message-submit').addEventListener('click', sendMessage);
+    document.getElementById('chat-message-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') sendMessage();
+    });
+});
+</script>
+{% endblock %}

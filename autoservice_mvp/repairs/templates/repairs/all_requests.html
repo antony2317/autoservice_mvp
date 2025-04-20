@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Новые заявки</h2>
+    <div class="list-group">
+        {% for request in requests %}
+        <div class="list-group-item">
+            <h5>{{ request.car }} от {{ request.user.get_full_name }}</h5>
+            <p>{{ request.description|truncatechars:100 }}</p>
+            <a href="{% url 'create_response' request.pk %}" class="btn btn-sm btn-primary">
+                Ответить
+            </a>
+        </div>
+        {% empty %}
+        <p>Нет новых заявок</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
