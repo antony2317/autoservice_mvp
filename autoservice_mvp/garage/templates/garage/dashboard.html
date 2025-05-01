@@ -7,7 +7,6 @@
 
 {% block content %}
 <div class="dashboard-container">
-    <!-- Для обычных пользователей -->
     {% if not user.is_staff %}
     <section class="user-section">
         <h2>Мои автомобили</h2>
@@ -34,7 +33,6 @@
         </div>
     </section>
 
-    <!-- Для автосервисов (админов) -->
     {% else %}
     <section class="admin-section">
         <h2>Новые заявки на ремонт</h2>

@@ -54,7 +54,6 @@ class ServiceRecordForm(forms.ModelForm):
         if self.instance and self.instance.garage:
             self.initial['garage_name'] = self.instance.garage.name
 
-        # Добавим общий стиль ко всем полям формы
         for field_name, field in self.fields.items():
             if field_name not in ['garage', 'garage_name']:  # У нас уже есть свой input для garage_name
                 field.widget.attrs.setdefault('class', 'form-control')
@@ -70,6 +69,6 @@ class ServiceRecordForm(forms.ModelForm):
             )
             cleaned_data['garage'] = garage
         else:
-            cleaned_data['garage'] = None  # <-- Явно ставим None, если ничего не ввели
+            cleaned_data['garage'] = None
 
         return cleaned_data

@@ -23,13 +23,12 @@ class GarageView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         """Возвращаем только автомобили текущего пользователя"""
-        return Car.objects.filter(user=self.request.user)  # Убрали select_related
+        return Car.objects.filter(user=self.request.user)
 
     def get_context_data(self, **kwargs):
         """Добавляем заявки в контекст"""
         context = super().get_context_data(**kwargs)
 
-        # Получаем заявки пользователя с оптимизацией запросов
         context['repair_requests'] = RepairRequest.objects.filter(
             user=self.request.user
         ).select_related('car').order_by('-created_at')[:5]
@@ -113,12 +112,10 @@ class GarageDashboardView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
 
         if self.request.user.is_staff:
-            # Для автосервисов: все новые заявки
             context['active_requests'] = RepairRequest.objects.filter(
                 status='pending'
             ).select_related('user', 'car')
         else:
-            # Для пользователей: их активные заявки
             context['user_requests'] = RepairRequest.objects.filter(
                 user=self.request.user,
                 status__in=['pending', 'accepted']

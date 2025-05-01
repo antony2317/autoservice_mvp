@@ -13,18 +13,15 @@ from account.decorators import service_required
 
 @login_required
 def service_dashboard(request):
-    # Новые заявки (еще без ответов от текущего сервиса)
     new_requests = RepairRequest.objects.exclude(
         responses__service=request.user
     ).filter(status='new').select_related('user', 'car')
 
-    # Принятые заявки (ответы текущего сервиса, которые клиент принял)
     accepted_requests = RepairResponse.objects.filter(
         service=request.user,
         is_accepted=True
     ).select_related('repair_request__user', 'repair_request__car')
 
-    # Заявки текущего пользователя (если это клиент)
     if hasattr(request.user, 'is_client') and request.user.is_client:
         my_requests = RepairRequest.objects.filter(
             user=request.user
@@ -45,12 +42,10 @@ def respond_to_request(request, request_id):
     repair_request = get_object_or_404(RepairRequest, id=request_id)
 
     if request.method == 'POST':
-        # Проверка, что пользователь - сервис
         if not hasattr(request.user, 'is_service') or not request.user.is_service:
             messages.error(request, "Только сервисы могут отвечать на заявки")
             return redirect('repairs:dashboard')
 
-        # Создание ответа
         try:
             response = RepairResponse(
                 repair_request=repair_request,
@@ -59,7 +54,7 @@ def respond_to_request(request, request_id):
                 proposed_date=request.POST.get('proposed_date'),
                 is_accepted=False
             )
-            response.full_clean()  # Валидация данных перед сохранением
+            response.full_clean()
             response.save()
 
             messages.success(request, "Ваше предложение успешно отправлено!")
@@ -81,7 +76,7 @@ def create_request(request):
             repair_request = form.save(commit=False)
             repair_request.user = request.user
             repair_request.save()
-            return redirect('garage')  # замени на свою страницу
+            return redirect('garage')
     else:
         form = RepairRequestForm(user=request.user)
 
@@ -106,19 +101,16 @@ def service_accepted_requests(request):
 def confirm_response(request, response_id):
     response = get_object_or_404(RepairResponse, id=response_id, repair_request__user=request.user)
 
-    # Устанавливаем статус "в работе"
     repair_request = response.repair_request
     repair_request.status = 'in_progress'
     repair_request.save()
 
-    # Снимаем все другие подтверждения
     RepairResponse.objects.filter(repair_request=repair_request).update(is_accepted=False)
 
-    # Подтверждаем выбранный ответ
     response.is_accepted = True
     response.save()
 
-    return redirect('garage')  # или куда тебе нужно
+    return redirect('garage')
 
 
 @login_required
@@ -133,10 +125,10 @@ def user_requests(request):
 def accept_response(request, response_id):
     response = get_object_or_404(RepairResponse, id=response_id)
 
-    if request.user == response.repair_request.user:  # или response.request.user в зависимости от вашей модели
+    if request.user == response.repair_request.user:
         response.is_accepted = True
         response.save()
-        response.repair_request.status = 'in_progress'  # или 'accepted'
+        response.repair_request.status = 'in_progress'
         response.repair_request.save()
 
         messages.success(request, 'Предложение принято! Заявка в работе.')
@@ -149,4 +141,4 @@ def accept_response(request, response_id):
 @login_required
 def my_requests(request):
     repair_requests = RepairRequest.objects.filter(user=request.user).order_by('-created_at').prefetch_related('responses')
-    return render(request, 'repairs/user_requests.html', {'repair_requests': repair_requests})
+    return render(request, 'chat/chat_room.html', {'repair_requests': repair_requests})

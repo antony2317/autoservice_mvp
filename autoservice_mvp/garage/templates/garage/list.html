@@ -27,7 +27,6 @@
 
     <a href="{% url 'add_car' %}" class="btn btn-primary">Добавить авто</a>
 
-    <!-- Секция заявок -->
     <div class="requests-section">
         <h2 class="requests-title">Мои заявки на ремонт</h2>
 
@@ -43,7 +42,7 @@
                 <p class="request-desc">{{ request.description|truncatechars:100 }}</p>
                 <p class="request-date">Создано: {{ request.created_at|date:"d.m.Y H:i" }}</p>
 
-                <!-- Блок ответов автосервисов -->
+
                 {% if request.responses.all %}
                 <div class="responses-block">
                     <h4>Ответы автосервисов:</h4>
@@ -61,6 +60,12 @@
                                 </form>
                             {% elif resp.is_accepted %}
                                 <span class="accepted-badge">✅ Принято</span>
+                            {% endif %}
+
+                            {% if request.responses.exists %}
+                                <a href="{% url 'chat:chat_between_users' request.id %}" class="btn btn-success mt-2">
+                                    💬 Перейти в чат с автосервисом
+                                </a>
                             {% endif %}
                         </div>
                         {% endif %}

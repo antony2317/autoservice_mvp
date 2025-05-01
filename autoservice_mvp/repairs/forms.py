@@ -1,5 +1,3 @@
-# repairs/forms.py
-
 from django import forms
 from garage.models import Car
 from .models import RepairRequest, RepairResponse
@@ -11,11 +9,11 @@ class RepairRequestForm(forms.ModelForm):
         fields = ['car', 'description']
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)  # Получаем пользователя
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
         if user:
-            self.fields['car'].queryset = Car.objects.filter(user=user)  # Фильтрация по пользователю
+            self.fields['car'].queryset = Car.objects.filter(user=user)
 
 class RepairResponseForm(forms.ModelForm):
     class Meta:

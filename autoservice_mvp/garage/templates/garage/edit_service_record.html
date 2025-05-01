@@ -12,12 +12,9 @@
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
 
-        <!-- Скрываем стандартное поле garage и заменяем своим -->
         <input type="hidden" name="garage" id="id_garage" value="{{ form.garage.value|default_if_none:'' }}">
 
-        <!-- Группа полей формы -->
         <div class="form-fields">
-            <!-- Поле для гаража -->
             <div class="form-group garage-group">
                 <label for="id_garage_name">Автосервис</label>
                 <input type="text" name="garage_name" id="id_garage_name"
@@ -35,7 +32,6 @@
                 {% endif %}
             </div>
 
-            <!-- Остальные поля формы (кроме garage) -->
             {% for field in form %}
                 {% if field.name != 'garage' and field.name != 'garage_name' %}
                 <div class="form-group">

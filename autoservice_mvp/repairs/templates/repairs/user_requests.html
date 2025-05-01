@@ -13,26 +13,22 @@
         <h4>Ответы автосервисов:</h4>
         {% for resp in req.responses.all %}
             <div class="response">
-                <p><strong>Сервис:</strong> {{ resp.service.username }}</p>
-                <p><strong>Цена:</strong> {{ resp.proposed_price }}₽</p>
-                <p><strong>Дата:</strong> {{ resp.proposed_date }}</p>
-
-                {% for resp in req.responses.all %}
-                    <p>DEBUG: Service ID = {{ resp.service.id }}, Service Username = {{ resp.service.username }}</p>
-                    <!-- Кнопка чата -->
-                    <a href="{% url 'chat_room' request_id=req.id other_user_id=resp.service.id %}"
-                       class="btn btn-outline-primary mb-2">
-                        💬 Чат с {{ resp.service.username }}
-                    </a>
-                {% endfor %}
+                <p>Сервис: {{ resp.service.username }}</p>
+                <p>Цена: {{ resp.proposed_price }}₽</p>
+                <p>Дата: {{ resp.proposed_date }}</p>
 
                 {% if not resp.is_accepted %}
                     <form method="post" action="{% url 'repairs:accept_response' resp.id %}">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-success">Принять предложение</button>
+                        <button type="submit">Принять предложение</button>
                     </form>
                 {% else %}
                     <span class="accepted">✅ Принято</span>
+
+                    <!-- Кнопка входа в чат -->
+                    <a href="{% url 'chat:chat_between_users' req.id %}" class="btn btn-primary mt-2">
+                        💬 Перейти в чат
+                    </a>
                 {% endif %}
             </div>
         {% endfor %}
@@ -42,5 +38,6 @@
 </div>
 <hr>
 {% endfor %}
+
 {% endblock %}
 

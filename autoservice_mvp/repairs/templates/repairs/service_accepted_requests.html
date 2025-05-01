@@ -3,6 +3,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'repairs/css/accepted_responses.css' %}">
 {% endblock %}
+
 {% block content %}
 <div class="accepted-responses-container">
     <h2>Принятые заявки</h2>
@@ -21,6 +22,13 @@
                         <p><strong>Описание:</strong> {{ response.repair_request.description }}</p>
                         <p><strong>Цена:</strong> {{ response.proposed_price }} ₽</p>
                         <p><strong>Дата ремонта:</strong> {{ response.proposed_date }}</p>
+
+                        <div class="chat-button-container" style="margin-top: 15px;">
+                            <a href="{% url 'chat:chat_between_users' request_id=response.repair_request.id %}"
+                               class="btn btn-primary">
+                                Перейти в чат
+                            </a>
+                        </div>
                     </div>
                 </div>
             {% endfor %}

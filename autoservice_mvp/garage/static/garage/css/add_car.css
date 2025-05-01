@@ -7,7 +7,7 @@
     box-shadow: 0 4px 20px rgba(0,0,0,0.08);
 }
 
-/* Заголовок */
+
 .add-car-title {
     color: #1e3a8a;
     font-size: 1.8rem;
@@ -16,17 +16,14 @@
     font-weight: 600;
 }
 
-/* Форма */
 .add-car-form {
     display: block;
 }
 
-/* Группы полей */
 .form-field {
     margin-bottom: 1.5rem;
 }
 
-/* Метки */
 .form-label {
     display: block;
     margin-bottom: 0.5rem;
@@ -35,7 +32,6 @@
     font-size: 0.95rem;
 }
 
-/* Общие стили для всех полей ввода */
 .add-car-form input[type="text"],
 .add-car-form input[type="number"],
 .add-car-form select {
@@ -48,7 +44,6 @@
     transition: all 0.3s ease;
 }
 
-/* Стили для выпадающего списка */
 .add-car-form select {
     appearance: none;
     background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
@@ -57,7 +52,6 @@
     background-size: 1em;
 }
 
-/* Фокус-стили */
 .add-car-form input:focus,
 .add-car-form select:focus {
     outline: none;
@@ -65,7 +59,6 @@
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
-/* Кнопка */
 .form-submit-btn {
     display: inline-block;
     width: 100%;
@@ -87,18 +80,15 @@
     box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
 }
 
-/* Состояние disabled для поля модели */
 .add-car-form input[disabled] {
     background-color: #f1f5f9;
     color: #64748b;
 }
 
-/* Подсказки моделей */
 datalist {
-    display: none; /* Скрываем, но оставляем функционал */
+    display: none;
 }
 
-/* Адаптивность */
 @media (max-width: 640px) {
     .add-car-wrapper {
         padding: 1.5rem;

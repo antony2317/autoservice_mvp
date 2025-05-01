@@ -9,7 +9,6 @@ class Command(BaseCommand):
     help = 'Заполняет базу тестовыми данными для дашборда автосервиса'
 
     def handle(self, *args, **options):
-        # Создаем тестовый автосервис
         service, created = User.objects.get_or_create(
             username='autoservice',
             defaults={
@@ -22,7 +21,6 @@ class Command(BaseCommand):
             service.set_password('test123')
             service.save()
 
-        # Создаем тестового клиента
         client, created = User.objects.get_or_create(
             username='client1',
             defaults={
@@ -34,13 +32,12 @@ class Command(BaseCommand):
             client.set_password('client123')
             client.save()
 
-        # Создаем заявки
         statuses = ['new', 'accepted', 'in_progress', 'completed']
         for i in range(1, 15):
             Order.objects.get_or_create(
                 client=client,
                 service=service,
-                car_model=f'BMW X{i % 5}',  # 5 разных моделей
+                car_model=f'BMW X{i % 5}',
                 problem=f'Проблема с двигателем #{i}',
                 status=statuses[i % 4],
                 created_at=datetime.now() - timedelta(days=i),

@@ -1,8 +1,9 @@
 from django.urls import path
 from . import views
 
-urlpatterns = [
-    #path('dashboard/', views.service_dashboard, name='service_dashboard'),
-    #path('orders/<int:order_id>/update_status/', views.update_order_status, name='update_order_status'),
+app_name = 'services'
 
+urlpatterns = [
+    path('profile/', views.service_profile, name='service_profile'),
+    path('responses/', views.my_responses, name='my_responses'),
 ]

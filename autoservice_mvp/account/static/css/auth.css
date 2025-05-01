@@ -1,4 +1,4 @@
-/* Auth Styles */
+
 .auth-container {
     max-width: 450px;
     margin: 4rem auto;
@@ -88,7 +88,7 @@
     text-decoration: underline;
 }
 
-/* Добавьте эти стили в auth.css */
+
 .form-help {
     display: block;
     margin-top: 0.25rem;
@@ -96,7 +96,7 @@
     color: var(--gray);
 }
 
-/* Стили для сообщений (ошибки, успех) */
+
 .messages {
     margin-bottom: 1.5rem;
 }
@@ -119,29 +119,29 @@
     border: 1px solid #fecaca;
 }
 
-/* Стили для обязательных полей */
+
 .required {
     color: #ef4444;
     margin-left: 3px;
 }
 
-/* Стили для полей ввода файлов */
+
 .form-group input[type="file"] {
     padding: 0.5rem;
     border: 1px dashed #cbd5e1;
     background-color: #f8fafc;
 }
 
-/* Специфичные стили для страницы регистрации сервиса */
+
 .service-register .auth-container {
-    max-width: 600px; /* Можно увеличить ширину для большего количества полей */
+    max-width: 600px;
 }
 
 .service-register .form-group {
     margin-bottom: 1.5rem;
 }
 
-/* Стили для формы */
+
 .form-control {
     width: 100%;
     padding: 10px 15px;

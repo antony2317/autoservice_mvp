@@ -1,4 +1,3 @@
-/* Стили секции заявок */
 .requests-section {
     margin-top: 4rem;
     padding: 2.5rem;
@@ -28,7 +27,6 @@
     border-radius: 3px;
 }
 
-/* Стили списка заявок */
 .requests-list {
     list-style: none;
     padding: 0;
@@ -64,7 +62,6 @@
     border-color: rgba(0, 0, 0, 0.1);
 }
 
-/* Цвета статусов */
 .request-item.request-new {
     border-top: 3px solid #3b82f6;
 }
@@ -196,7 +193,6 @@
     margin-top: 1rem;
 }
 
-/* Кнопка создания заявки */
 .btn-new-request {
     display: inline-flex;
     align-items: center;
@@ -227,7 +223,6 @@
     transform: translateY(0);
 }
 
-/* Иконка для кнопки */
 .btn-new-request::before {
     content: '+';
     margin-right: 0.6rem;
@@ -240,7 +235,6 @@
     transform: scale(1.1);
 }
 
-/* Эффект "всплывающих" частиц при наведении */
 .btn-new-request::after {
     content: '';
     position: absolute;
@@ -257,7 +251,6 @@
     transform: translate(100%, 100%) rotate(45deg);
 }
 
-/* Адаптивность */
 @media (max-width: 768px) {
     .requests-section {
         padding: 1.75rem;

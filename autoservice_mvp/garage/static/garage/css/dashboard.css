@@ -4,7 +4,6 @@
     padding: 20px;
 }
 
-/* Стили для пользователей */
 .user-section {
     background: #f9f9f9;
     padding: 20px;
@@ -25,7 +24,6 @@
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-/* Стили для заявок */
 .request-card {
     background: white;
     padding: 15px;
@@ -35,13 +33,12 @@
 }
 
 .request-pending {
-    border-left-color: #ffc107; /* Желтый для ожидания */
+    border-left-color: #ffc107;
 }
 .request-accepted {
-    border-left-color: #28a745; /* Зеленый для принятых */
+    border-left-color: #28a745;
 }
 
-/* Стили для админ-панели */
 .admin-request-card {
     background: white;
     padding: 15px;

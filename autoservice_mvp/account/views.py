@@ -51,9 +51,9 @@ class UserLoginView(FormView):
         user = form.get_user()
         login(self.request, user)
 
-        # Определяем URL для редиректа в зависимости от типа пользователя
+
         if hasattr(user, 'is_service') and user.is_service:
-            return redirect('repairs:service_dashboard')  # Для автосервисов
-        return redirect('home')  # Для обычных пользователей
+            return redirect('repairs:service_dashboard')
+        return redirect('home')
 
 

@@ -158,13 +158,11 @@ class Car(models.Model):
         verbose_name='Марка автомобиля'
     )
 
-    # Поле с выбором модели (будет заполняться динамически через JS)
     model = models.CharField(
         max_length=50,
         verbose_name='Модель автомобиля'
     )
 
-    # Поле с выбором года выпуска
     year = models.PositiveIntegerField(
         choices=get_year_choices(),
         verbose_name='Год выпуска'

@@ -1,78 +1,68 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
 <div class="container mt-4">
-    <h2>Чат с {{ receiver.username }}</h2>
-    
-    <div id="chat-messages" class="border rounded p-3 mb-3" style="height: 500px; overflow-y: auto;">
-        {% for message in request.user.sent_messages.all|add:request.user.received_messages.all|dictsort:"timestamp" %}
+    <h2>Чат по заявке #{{ repair_request.id }}</h2>
+
+    <div id="chat-messages" class="card mb-3 p-3" style="height: 400px; overflow-y: auto; background: #f8f9fa;">
+        {% for message in chat_messages %}
             <div class="mb-3 {% if message.sender == request.user %}text-end{% endif %}">
-                <div class="d-inline-block p-2 rounded {% if message.sender == request.user %}bg-primary text-white{% else %}bg-light{% endif %}">
-                    <div><strong>{{ message.sender.username }}</strong></div>
-                    <div>{{ message.message }}</div>
-                    <small class="text-muted">{{ message.timestamp|time:"H:i" }}</small>
+                <div class="d-flex {% if message.sender == request.user %}justify-content-end{% endif %}">
+                    <div class="message-bubble {% if message.sender == request.user %}bg-primary text-white{% else %}bg-light{% endif %} p-3 rounded">
+                        <div class="message-text">{{ message.message }}</div>
+                        <div class="message-time small text-muted mt-1">
+                            {{ message.timestamp|date:"H:i, d M Y" }}
+                        </div>
+                    </div>
                 </div>
             </div>
         {% endfor %}
     </div>
 
-    <div class="input-group mb-3">
-        <input id="chat-message-input" type="text" class="form-control" placeholder="Ваше сообщение...">
-        <button id="chat-message-submit" class="btn btn-primary">Отправить</button>
-    </div>
+    <form method="post" class="d-flex">
+        {% csrf_token %}
+        <input type="text" name="message" class="form-control me-2" placeholder="Введите сообщение..." required>
+        <button type="submit" class="btn btn-primary">Отправить</button>
+    </form>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const roomName = "{{ request.user.id }}_{{ receiver.id }}";
-    const chatSocket = new WebSocket(
-        'ws://' + window.location.host + '/ws/chat/' + roomName + '/'
-    );
-    const messagesContainer = document.getElementById('chat-messages');
-    
-    chatSocket.onopen = function(e) {
-        console.log("WebSocket подключён!");
-    };
-    
-    chatSocket.onclose = function(e) {
-        console.error("WebSocket отключён", e);
-    };
-    
-    chatSocket.onmessage = function(e) {
-        const data = JSON.parse(e.data);
-        const messageElement = document.createElement('div');
-        messageElement.className = `mb-3 ${data.sender_id == {{ request.user.id }} ? 'text-end' : ''}`;
-        
-        messageElement.innerHTML = `
-            <div class="d-inline-block p-2 rounded ${data.sender_id == {{ request.user.id }} ? 'bg-primary text-white' : 'bg-light'}">
-                <div><strong>${data.sender_id == {{ request.user.id }} ? 'Вы' : '{{ receiver.username }}'}</strong></div>
-                <div>${data.message}</div>
-                <small class="text-muted">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</small>
-            </div>
-        `;
-        
-        messagesContainer.appendChild(messageElement);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    };
-    
-    function sendMessage() {
-        const messageInput = document.getElementById('chat-message-input');
-        const message = messageInput.value.trim();
-        
-        if (message) {
-            chatSocket.send(JSON.stringify({
-                'message': message,
-                'sender_id': {{ request.user.id }},
-                'receiver_id': {{ receiver.id }}
-            }));
-            messageInput.value = '';
-        }
-    }
-    
-    document.getElementById('chat-message-submit').addEventListener('click', sendMessage);
-    document.getElementById('chat-message-input').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') sendMessage();
+const chatMessagesContainer = document.getElementById('chat-messages');
+
+function fetchMessages() {
+    fetch("{% url 'chat:fetch_messages' request_id=repair_request.id %}")
+    .then(response => response.json())
+    .then(data => {
+        chatMessagesContainer.innerHTML = '';
+        data.messages.forEach(message => {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('mb-3');
+
+            const isCurrentUser = message.sender === "{{ request.user.username }}";
+
+            const innerHtml = `
+                <div class="d-flex ${isCurrentUser ? 'justify-content-end' : ''}">
+                    <div class="message-bubble ${isCurrentUser ? 'bg-primary text-white' : 'bg-light'} p-3 rounded">
+                        <div class="message-text">${message.message}</div>
+                        <div class="message-time small text-muted mt-1">${message.timestamp}</div>
+                    </div>
+                </div>
+            `;
+
+            messageDiv.innerHTML = innerHtml;
+            chatMessagesContainer.appendChild(messageDiv);
+        });
+
+        // Прокрутка вниз
+        chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
     });
-});
+}
+
+// Каждые 2 секунды подгружаем
+setInterval(fetchMessages, 2000);
+
+// Сразу первая загрузка
+fetchMessages();
 </script>
 {% endblock %}

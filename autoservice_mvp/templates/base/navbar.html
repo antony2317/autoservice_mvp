@@ -4,7 +4,6 @@
     <ul class="nav-menu">
         {% if user.is_authenticated %}
             {% if user.is_service %}
-                <!-- Навигация для автосервиса -->
                 <li>
                     <a href="{% url 'repairs:service_dashboard' %}"
                        class="nav-link {% if 'dashboard' in request.path %}active{% endif %}">
@@ -17,8 +16,19 @@
                        Принятые заявки
                     </a>
                 </li>
+                <li>
+                    <a href="{% url 'services:service_profile' %}"
+                       class="nav-link {% if 'profile' in request.path %}active{% endif %}">
+                       Личный кабинет
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'services:my_responses' %}"
+                       class="nav-link {% if 'responses' in request.path %}active{% endif %}">
+                       Мои отклики
+                    </a>
+                </li>
             {% else %}
-                <!-- Навигация для автовладельца -->
                 <li>
                     <a href="{% url 'home' %}"
                        class="nav-link {% if request.path == '/' %}active{% endif %}">
@@ -31,10 +41,8 @@
                        Гараж
                     </a>
                 </li>
-
             {% endif %}
         {% else %}
-            <!-- Для неавторизованных пользователей -->
             <li>
                 <a href="{% url 'home' %}"
                    class="nav-link {% if request.path == '/' %}active{% endif %}">

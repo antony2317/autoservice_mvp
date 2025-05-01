@@ -40,7 +40,7 @@ class RepairRequest(models.Model):
 
     @property
     def has_accepted_response(self):
-        """Проверяет, есть ли принятое предложение по этой заявке"""
+
         return self.responses.filter(is_accepted=True).exists()
 
 
@@ -70,10 +70,8 @@ class RepairResponse(models.Model):
         return f"Ответ от {self.service.username} на заявку #{self.repair_request.id}"
 
     def clean(self):
-        # Проверка, что дата не в прошлом
         if self.proposed_date and self.proposed_date < timezone.now().date():
             raise ValidationError("Дата ремонта не может быть в прошлом")
 
-        # Проверка положительной цены
         if self.proposed_price <= 0:
             raise ValidationError("Цена должна быть положительной")
