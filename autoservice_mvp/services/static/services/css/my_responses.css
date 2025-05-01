@@ -1,0 +1,101 @@
+.responses-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.responses-container h2 {
+    font-size: 28px;
+    margin-bottom: 20px;
+    color: #333;
+    text-align: center;
+    font-weight: bold;
+}
+
+.responses-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.response-card {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.response-card:hover {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.response-card h4 {
+    font-size: 20px;
+    color: #007bff;
+    margin-bottom: 10px;
+}
+
+.response-card p {
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: #555;
+}
+
+.response-card small {
+    display: block;
+    font-size: 14px;
+    color: #888;
+}
+
+.response-card .text-muted {
+    font-style: italic;
+}
+
+.response-card .status {
+    font-weight: bold;
+    color: #28a745;
+}
+
+.response-card .status.pending {
+    color: #ffc107;
+}
+
+.response-card .status.rejected {
+    color: #dc3545;
+}
+
+@media (max-width: 768px) {
+    .responses-container {
+        padding: 15px;
+    }
+
+    .response-card {
+        padding: 15px;
+    }
+}
+
+.chat-button {
+    display: inline-block;
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 16px;
+    margin-top: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.chat-button:hover {
+    background-color: #0056b3;
+    text-decoration: none;
+}
+
+.chat-button:focus {
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}

@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'services/css/service_profile.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-card">
+        <div class="profile-header">
+            <h2>{{ auto_service.name }}</h2>
+            <p>{{ auto_service.address }}</p>
+            <small>📞 {{ auto_service.phone }}</small>
+        </div>
+
+        <div class="profile-body">
+            <h3>Редактировать данные</h3>
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="id_name">Название автосервиса</label>
+                    {{ form.name }}
+                </div>
+                <div class="form-group">
+                    <label for="id_address">Адрес</label>
+                    {{ form.address }}
+                </div>
+                <div class="form-group">
+                    <label for="id_phone">Телефон</label>
+                    {{ form.phone }}
+                </div>
+                <button type="submit" class="submit-btn">Сохранить изменения</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
