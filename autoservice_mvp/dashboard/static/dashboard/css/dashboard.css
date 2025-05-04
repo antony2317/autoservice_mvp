@@ -1,0 +1,59 @@
+.dashboard-container {
+    max-width: 1000px;
+    margin: auto;
+    padding: 2rem;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.title {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.stats-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.card {
+    flex: 1 1 200px;
+    background: #ffffff;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    padding: 1.2rem;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.card:hover {
+    transform: scale(1.02);
+    background-color: #f8fafc;
+}
+
+.toggle-section {
+    display: none;
+    background: #f9fafb;
+    border: 1px solid #e2e8f0;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.toggle-section h3 {
+    margin-top: 0;
+    font-size: 1.2rem;
+}
+
+.toggle-section ul {
+    list-style: none;
+    padding: 0;
+}
+
+.toggle-section li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e2e8f0;
+}

@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'dashboard/css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h1 class="title">Панель администратора</h1>
+
+    <div class="stats-cards">
+        <div class="card toggle-card" data-target="#users-list">
+            <h3>Пользователи</h3>
+            <p>{{ user_count }}</p>
+        </div>
+        <div class="card toggle-card" data-target="#services-list">
+            <h3>Автосервисы</h3>
+            <p>{{ service_count }}</p>
+        </div>
+        <div class="card toggle-card" data-target="#requests-list">
+            <h3>Заявки</h3>
+            <p>{{ request_count }}</p>
+        </div>
+        <div class="card toggle-card" data-target="#responses-list">
+            <h3>Отклики</h3>
+            <p>{{ response_count }}</p>
+        </div>
+    </div>
+
+    <div id="users-list" class="toggle-section">
+        <h3>Список пользователей</h3>
+        <ul>
+            {% for user in users %}
+                <li>{{ user.username }} — {{ user.email }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div id="services-list" class="toggle-section">
+        <h3>Список автосервисов</h3>
+        <ul>
+            {% for service in services %}
+                <li>{{ service.username }} — {{ service.email }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div id="requests-list" class="toggle-section">
+        <h3>Список заявок</h3>
+        <ul>
+            {% for req in repair_requests %}
+                <li>Заявка #{{ req.id }}: {{ req.description|truncatechars:80 }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div id="responses-list" class="toggle-section">
+        <h3>Список откликов</h3>
+        <ul>
+            {% for resp in responses %}
+                <li>Заявка #{{ resp.repair_request.id }} — {{ resp.proposed_price }}₽ от {{ resp.service.username }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.toggle-card').forEach(card => {
+        card.addEventListener('click', () => {
+            const target = document.querySelector(card.dataset.target);
+            if (target.style.display === 'block') {
+                target.style.display = 'none';
+            } else {
+                document.querySelectorAll('.toggle-section').forEach(section => section.style.display = 'none');
+                target.style.display = 'block';
+            }
+        });
+    });
+</script>
+{% endblock %}

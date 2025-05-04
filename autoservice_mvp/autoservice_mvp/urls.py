@@ -11,4 +11,7 @@ urlpatterns = [
     path('services/', include('services.urls')),
     path('repairs/', include('repairs.urls')),
     path('chat/', include('chat.urls')),
+    path('dashboard/', include(('dashboard.urls', 'dashboard'))),
+    path('api/', include('api.urls')),
+
 ]

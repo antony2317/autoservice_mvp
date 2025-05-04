@@ -9,6 +9,10 @@ from django.views.decorators.http import require_POST
 from django.contrib import messages
 
 from account.decorators import service_required
+from .tasks import notify_user_about_response
+
+
+
 
 
 @login_required
@@ -56,6 +60,16 @@ def respond_to_request(request, request_id):
             )
             response.full_clean()
             response.save()
+
+            print("Email пользователя:", repair_request.user.email)
+
+            notify_user_about_response.delay(
+                user_email=repair_request.user.email,
+                service_name=request.user.username,
+                price=response.proposed_price,
+                date=str(response.proposed_date)
+            )
+
 
             messages.success(request, "Ваше предложение успешно отправлено!")
             return redirect('repairs:dashboard')
