@@ -3,6 +3,7 @@ from django.conf import settings
 from garage.models import Car
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from account.models import AutoService
 
 
 class RepairRequest(models.Model):
@@ -28,6 +29,15 @@ class RepairRequest(models.Model):
         choices=STATUS_CHOICES,
         default='new',
         verbose_name='Статус'
+    )
+
+    executor = models.ForeignKey(
+        AutoService,  # Ссылаемся на модель автосервиса
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='assigned_requests',
+        verbose_name='Исполнитель'
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
 

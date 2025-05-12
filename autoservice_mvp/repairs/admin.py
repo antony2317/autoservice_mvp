@@ -1,10 +1,12 @@
 from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
+from unfold.admin import ModelAdmin
+
 from .models import RepairRequest, RepairResponse
 
 @admin.register(RepairRequest)
-class RepairRequestAdmin(admin.ModelAdmin):
+class RepairRequestAdmin(ModelAdmin):
     list_display = ('id', 'user_info', 'car_info', 'status', 'formatted_status', 'created_at', 'short_description')
     list_filter = ('status', 'created_at')
     search_fields = ('user__username', 'car__brand', 'car__model', 'description')
@@ -46,7 +48,7 @@ class RepairRequestAdmin(admin.ModelAdmin):
     mark_as_completed.short_description = "Перевести в статус 'Завершена'"
 
 @admin.register(RepairResponse)
-class RepairResponseAdmin(admin.ModelAdmin):
+class RepairResponseAdmin(ModelAdmin):
     list_display = ('id', 'request_info', 'service_info', 'proposed_price',
                    'proposed_date', 'is_accepted', 'acceptance_status', 'created_at')
     list_filter = ('is_accepted', 'proposed_date', 'repair_request__status')

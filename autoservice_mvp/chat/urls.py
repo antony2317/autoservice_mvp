@@ -8,5 +8,3 @@ urlpatterns = [
     path('chat/<int:request_id>/fetch/', views.fetch_messages, name='fetch_messages'),
     path('chat/<int:request_id>/service/<int:response_id>/', views.chat_with_service, name='chat_with_service'),
 ]
-
-

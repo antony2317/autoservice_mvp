@@ -122,5 +122,3 @@ class GarageDashboardView(LoginRequiredMixin, TemplateView):
             ).select_related('car')
 
         return context
-
-

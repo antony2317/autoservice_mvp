@@ -1,5 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth import get_user_model
+from unfold.admin import ModelAdmin, TabularInline
+
 from .models import Garage, Car, ServiceRecord, ServiceRequest
 from .models import CAR_BRANDS
 from django.utils.html import format_html
@@ -14,7 +16,7 @@ admin.site.index_title = "Управление данными"
 
 # Класс для модели Garage
 @admin.register(Garage)
-class GarageAdmin(admin.ModelAdmin):
+class GarageAdmin(ModelAdmin):
     list_display = ('name', 'short_address', 'phone', 'specialization')
     search_fields = ('name', 'address', 'phone', 'specialization')
     list_filter = ('specialization',)
@@ -41,7 +43,7 @@ class GarageAdmin(admin.ModelAdmin):
 
 # Класс для модели Car
 @admin.register(Car)
-class CarAdmin(admin.ModelAdmin):
+class CarAdmin(ModelAdmin):
     list_display = ('full_name', 'user', 'year', 'mileage', 'vin_display')
     list_filter = ('brand', 'year', 'user')
     search_fields = ('brand', 'model', 'vin', 'user__username')
@@ -79,7 +81,7 @@ class CarAdmin(admin.ModelAdmin):
 
 # Класс для модели ServiceRecord
 @admin.register(ServiceRecord)
-class ServiceRecordAdmin(admin.ModelAdmin):
+class ServiceRecordAdmin(ModelAdmin):
     list_display = ('car_info', 'garage', 'date', 'service_type', 'cost_display', 'has_receipt')
     list_filter = ('service_type', 'garage', 'date')
     search_fields = ('car__brand', 'car__model', 'description', 'garage__name')
@@ -122,7 +124,7 @@ class ServiceRecordAdmin(admin.ModelAdmin):
 
 # Класс для модели ServiceRequest
 @admin.register(ServiceRequest)
-class ServiceRequestAdmin(admin.ModelAdmin):
+class ServiceRequestAdmin(ModelAdmin):
     list_display = ('car_info', 'status', 'status_display', 'desired_date', 'short_description')
     list_filter = ('status', 'desired_date')
     search_fields = ('car__brand', 'car__model', 'description')
@@ -177,7 +179,7 @@ class ServiceRequestAdmin(admin.ModelAdmin):
 
 
 # Inline для ServiceRecord в Car
-class ServiceRecordInline(admin.TabularInline):
+class ServiceRecordInline(TabularInline):
     model = ServiceRecord
     extra = 0
     fields = ('garage', 'date', 'service_type', 'cost')

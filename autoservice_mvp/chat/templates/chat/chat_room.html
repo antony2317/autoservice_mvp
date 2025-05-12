@@ -20,49 +20,58 @@
         {% endfor %}
     </div>
 
-    <form method="post" class="d-flex">
-        {% csrf_token %}
-        <input type="text" name="message" class="form-control me-2" placeholder="Введите сообщение..." required>
+    <form id="chat-form" class="d-flex">
+        <input type="text" name="message" id="chat-message-input" class="form-control me-2" placeholder="Введите сообщение..." required autocomplete="off">
         <button type="submit" class="btn btn-primary">Отправить</button>
     </form>
 </div>
 
 <script>
-const chatMessagesContainer = document.getElementById('chat-messages');
+    const requestId = "{{ repair_request.id }}";
+    const username = "{{ request.user.username }}";
+    const chatMessages = document.getElementById('chat-messages');
 
-function fetchMessages() {
-    fetch("{% url 'chat:fetch_messages' request_id=repair_request.id %}")
-    .then(response => response.json())
-    .then(data => {
-        chatMessagesContainer.innerHTML = '';
-        data.messages.forEach(message => {
-            const messageDiv = document.createElement('div');
-            messageDiv.classList.add('mb-3');
+    const roomId = "{{ repair_request.id }}";
+    const chatSocket = new WebSocket("ws://" + window.location.host + `/ws/chat/${roomId}/`);  // Используйте ws:// для локальных серверов без SSL
 
-            const isCurrentUser = message.sender === "{{ request.user.username }}";
+    chatSocket.onopen = function(e) {
+        console.log("WebSocket is open now.");
+    };
 
-            const innerHtml = `
-                <div class="d-flex ${isCurrentUser ? 'justify-content-end' : ''}">
-                    <div class="message-bubble ${isCurrentUser ? 'bg-primary text-white' : 'bg-light'} p-3 rounded">
-                        <div class="message-text">${message.message}</div>
-                        <div class="message-time small text-muted mt-1">${message.timestamp}</div>
+    chatSocket.onerror = function(e) {
+        console.error("WebSocket error: ", e);
+    };
+
+    chatSocket.onclose = function(e) {
+        console.log("WebSocket closed unexpectedly", e);
+    };
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const isOwnMessage = data.username === username;
+
+        const bubble = `
+            <div class="mb-3 ${isOwnMessage ? 'text-end' : ''}">
+                <div class="d-flex ${isOwnMessage ? 'justify-content-end' : ''}">
+                    <div class="message-bubble ${isOwnMessage ? 'bg-primary text-white' : 'bg-light'} p-3 rounded">
+                        <div class="message-text">${data.message}</div>
+                        <div class="message-time small text-muted mt-1">${data.username}</div>
                     </div>
                 </div>
-            `;
+            </div>`;
 
-            messageDiv.innerHTML = innerHtml;
-            chatMessagesContainer.appendChild(messageDiv);
-        });
+        chatMessages.innerHTML += bubble;
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    };
 
-        // Прокрутка вниз
-        chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
+    document.getElementById('chat-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const input = document.getElementById('chat-message-input');
+        const message = input.value.trim();
+        if (message) {
+            chatSocket.send(JSON.stringify({ 'message': message }));
+            input.value = '';
+        }
     });
-}
-
-// Каждые 2 секунды подгружаем
-setInterval(fetchMessages, 2000);
-
-// Сразу первая загрузка
-fetchMessages();
 </script>
 {% endblock %}

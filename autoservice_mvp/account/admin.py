@@ -1,5 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from unfold.admin import ModelAdmin
+
 from .models import User, AutoService
 
 
@@ -21,7 +23,7 @@ class CustomUserAdmin(UserAdmin):
 
 
 
-class AutoServiceAdmin(admin.ModelAdmin):
+class AutoServiceAdmin(ModelAdmin):
     list_display = ('name', 'user', 'phone')
     search_fields = ('name', 'user__username', 'phone')
     raw_id_fields = ('user',)
