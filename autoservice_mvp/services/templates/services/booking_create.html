@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+
+{% block content %}
+<section class="booking-section py-5">
+    <div class="container">
+        <h1 class="mb-4">Запись на услугу в {{ service_center.name }}</h1>
+        <form method="post" class="p-4 border rounded bg-light shadow-sm">
+            {% csrf_token %}
+            <div class="mb-3">
+                {{ form.service.label_tag }}{{ form.service }}
+            </div>
+            <div class="mb-3">
+                {{ form.date.label_tag }}{{ form.date }}
+            </div>
+            <div class="mb-3">
+                {{ form.time.label_tag }}{{ form.time }}
+            </div>
+            <button type="submit" class="btn btn-primary">Записаться</button>
+        </form>
+    </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dateInput = document.querySelector('#id_date');
+    const timeSelect = document.querySelector('#id_time');
+    const serviceCenterId = '{{ service_center.id }}';
+    const serviceSelect = document.querySelector('#id_service');
+
+    function fetchTimes() {
+        const selectedDate = dateInput.value;
+        const selectedServiceId = serviceSelect.value;
+
+        if (!selectedDate || !selectedServiceId) return;
+
+        fetch(`/services/available-times/${serviceCenterId}/?date=${selectedDate}&service_id=${selectedServiceId}`)
+            .then(response => response.json())
+            .then(data => {
+                timeSelect.innerHTML = '';
+                if (data.slots.length > 0) {
+                    data.slots.forEach(slot => {
+                        const option = document.createElement('option');
+                        option.value = slot;
+                        option.textContent = slot;
+                        timeSelect.appendChild(option);
+                    });
+                } else {
+                    const option = document.createElement('option');
+                    option.textContent = 'Нет доступного времени';
+                    timeSelect.appendChild(option);
+                }
+            });
+    }
+
+    dateInput.addEventListener('change', fetchTimes);
+    serviceSelect.addEventListener('change', fetchTimes);
+});
+</script>
+{% endblock %}

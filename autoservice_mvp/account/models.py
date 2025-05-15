@@ -13,3 +13,4 @@ class AutoService(models.Model):
     name = models.CharField(max_length=100, verbose_name='Название автосервиса')
     address = models.TextField(verbose_name='Адрес')
     phone = models.CharField(max_length=20,  verbose_name='Номер для связи')
+

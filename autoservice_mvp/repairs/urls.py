@@ -16,6 +16,7 @@ urlpatterns = [
     path('confirm-response/<int:response_id>/', views.confirm_response, name='confirm_response'),
     path('my-requests/', views.my_requests, name='my_requests'),
     path('accept/<int:response_id>/', views.accept_response, name='accept_response'),
+    path('response/<int:request_id>/change-status/', views.change_request_status, name='change_status'),
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

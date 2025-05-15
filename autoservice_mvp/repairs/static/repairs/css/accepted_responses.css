@@ -1,45 +1,52 @@
+/* Основные стили */
 .accepted-responses-container {
     max-width: 1200px;
     margin: 30px auto;
     padding: 20px;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: #333;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: #2d3748;
 }
 
 .accepted-responses-container h2 {
     color: #2c3e50;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
     font-weight: 600;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+    font-size: 1.75rem;
 }
 
+/* Список заявок */
 .responses-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 25px;
 }
 
+/* Карточка заявки */
 .response-card {
     background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: all 0.3s ease;
+    border: 1px solid #e2e8f0;
     display: flex;
     flex-direction: column;
 }
 
 .response-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    border-color: #cbd5e0;
 }
 
+/* Шапка карточки */
 .response-header {
-    padding: 15px;
-    background-color: #f1f4f7;
-    border-bottom: 1px solid #eaeaea;
+    padding: 16px 20px;
+    background-color: #f8fafc;
+    border-bottom: 1px solid #edf2f7;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -48,41 +55,220 @@
 .response-id {
     font-weight: 600;
     color: #2c3e50;
+    font-size: 1.05rem;
 }
 
+/* Бейдж статуса */
 .response-badge {
-    background-color: #2ecc71;
     color: white;
-    padding: 5px 10px;
+    padding: 5px 12px;
     border-radius: 20px;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     font-weight: 500;
-    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
+.badge-new {
+    background-color: #3b82f6;
+}
+
+.badge-in_progress {
+    background-color: #f59e0b;
+}
+
+.badge-completed {
+    background-color: #10b981;
+}
+
+/* Тело карточки */
 .response-body {
-    padding: 15px 20px;
+    padding: 20px;
     flex-grow: 1;
+    display: flex;
+    flex-direction: column;
 }
 
-.response-body p {
-    margin: 8px 0;
+.response-details p {
+    margin: 12px 0;
     line-height: 1.5;
     font-size: 0.95rem;
 }
 
-.response-body p strong {
+.response-details p strong {
     display: block;
-    color: #2c3e50;
+    color: #4a5568;
     font-weight: 600;
-    margin-bottom: 2px;
+    margin-bottom: 4px;
+    font-size: 0.85rem;
 }
 
+/* Форма статуса */
+.status-form {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px dashed #e2e8f0;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #4a5568;
+    font-size: 0.9rem;
+}
+
+.select-wrapper {
+    position: relative;
+}
+
+.select-wrapper::after {
+    content: "▼";
+    font-size: 0.7rem;
+    color: #718096;
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.form-select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    background-color: #f8fafc;
+    appearance: none;
+    transition: border-color 0.2s;
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Кнопки */
+.button-group {
+    display: flex;
+    gap: 12px;
+    margin-top: 15px;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    flex: 1;
+}
+
+.btn-update {
+    background-color: #3b82f6;
+    color: white;
+}
+
+.btn-update:hover {
+    background-color: #2563eb;
+    transform: translateY(-2px);
+}
+
+.btn-chat {
+    background-color: #10b981;
+    color: white;
+}
+
+.btn-chat:hover {
+    background-color: #059669;
+    transform: translateY(-2px);
+}
+
+.btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Нет заявок */
 .no-responses {
     text-align: center;
-    padding: 40px 20px;
+    padding: 50px 20px;
     background: white;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    color: #7f8c8d;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    color: #718096;
+    border: 1px dashed #cbd5e0;
+}
+
+.no-responses svg {
+    margin-bottom: 20px;
+}
+
+.no-responses h3 {
+    color: #4a5568;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.no-responses p {
+    color: #718096;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.response-card {
+    animation: fadeIn 0.3s ease forwards;
+    animation-delay: calc(var(--order) * 0.1s);
+    opacity: 0;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .responses-list {
+        grid-template-columns: 1fr;
+    }
+
+    .button-group {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+    }
+
+    .accepted-responses-container {
+        padding: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .response-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .response-badge {
+        align-self: flex-start;
+    }
 }

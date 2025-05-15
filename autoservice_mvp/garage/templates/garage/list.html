@@ -50,7 +50,12 @@
                     {% for resp in request.responses.all %}
                         {% if resp.is_accepted or not request.has_accepted_response %}
                         <div class="response {% if resp.is_accepted %}response-accepted{% endif %}">
-                            <p><strong>Сервис:</strong> {{ resp.service.username }}</p>
+                            <p>
+                                <strong>Сервис:</strong>
+                                <a href="{% url 'services:service_detail' resp.service.autoservice.id %}" class="service-link">
+                                    {{ resp.service.username }}
+                                </a>
+                            </p>
                             <p><strong>Цена:</strong> {{ resp.proposed_price }}₽</p>
                             <p><strong>Дата ремонта:</strong> {{ resp.proposed_date|date:"d.m.Y" }}</p>
                             {% if not resp.is_accepted and not request.has_accepted_response %}

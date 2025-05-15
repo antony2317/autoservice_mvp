@@ -1,41 +1,95 @@
 {% extends 'base.html' %}
 {% load static %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'repairs/css/accepted_responses.css' %}">
 {% endblock %}
 
 {% block content %}
 <div class="accepted-responses-container">
-    <h2>Принятые заявки</h2>
+    <h2>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-list">
+            <line x1="8" y1="6" x2="21" y2="6"></line>
+            <line x1="8" y1="12" x2="21" y2="12"></line>
+            <line x1="8" y1="18" x2="21" y2="18"></line>
+            <line x1="3" y1="6" x2="3.01" y2="6"></line>
+            <line x1="3" y1="12" x2="3.01" y2="12"></line>
+            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+        </svg>
+        Принятые заявки
+    </h2>
 
     {% if responses %}
         <div class="responses-list">
             {% for response in responses %}
-                <div class="response-card">
+                <div class="response-card" data-status="{{ response.repair_request.status }}">
                     <div class="response-header">
                         <div class="response-id">Заявка #{{ response.repair_request.id }}</div>
-                        <div class="response-badge">Подтверждено</div>
+                        <div class="response-badge badge-{{ response.repair_request.status }}">
+                            {{ response.repair_request.get_status_display }}
+                        </div>
                     </div>
                     <div class="response-body">
+                        <div class="response-details">
                         <p><strong>Клиент:</strong> {{ response.repair_request.user.username }}</p>
                         <p><strong>Автомобиль:</strong> {{ response.repair_request.car }}</p>
                         <p><strong>Описание:</strong> {{ response.repair_request.description }}</p>
                         <p><strong>Цена:</strong> {{ response.proposed_price }} ₽</p>
                         <p><strong>Дата ремонта:</strong> {{ response.proposed_date }}</p>
-
-                        <div class="chat-button-container" style="margin-top: 15px;">
-                            <a href="{% url 'chat:chat_between_users' request_id=response.repair_request.id %}"
-                               class="btn btn-primary">
-                                Перейти в чат
-                            </a>
                         </div>
+
+                        {% if user.is_authenticated and user.is_service %}
+                            <form method="post" action="{% url 'repairs:change_status' response.repair_request.id %}" class="status-form">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label for="status-{{ response.repair_request.id }}" class="form-label">Изменить статус:</label>
+                                    <div class="select-wrapper">
+                                        <select name="status" id="status-{{ response.repair_request.id }}" class="form-select">
+                                            <option value="new" {% if response.repair_request.status == 'new' %}selected{% endif %}>Новая</option>
+                                            <option value="in_progress" {% if response.repair_request.status == 'in_progress' %}selected{% endif %}>В работе</option>
+                                            <option value="completed" {% if response.repair_request.status == 'completed' %}selected{% endif %}>Завершена</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="button-group">
+                                    <button type="submit" class="btn btn-update">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-refresh-cw">
+                                            <polyline points="23 4 23 10 17 10"></polyline>
+                                            <polyline points="1 20 1 14 7 14"></polyline>
+                                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                                        </svg>
+                                        Обновить
+                                    </button>
+                                    <a href="{% url 'chat:chat_between_users' request_id=response.repair_request.id %}" class="btn btn-chat">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-square">
+                                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                        </svg>
+                                        Чат
+                                    </a>
+                                </div>
+                            </form>
+                        {% else %}
+                            <div class="button-group">
+                                <a href="{% url 'chat:chat_between_users' request_id=response.repair_request.id %}" class="btn btn-chat">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-square">
+                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                    </svg>
+                                    Перейти в чат
+                                </a>
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
             {% endfor %}
         </div>
     {% else %}
         <div class="no-responses">
-            <p>Нет подтвержденных заявок.</p>
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#7f8c8d" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather feather-inbox">
+                <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline>
+                <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
+            </svg>
+            <h3>Нет подтвержденных заявок</h3>
+            <p>Здесь будут отображаться заявки, которые вы подтвердили</p>
         </div>
     {% endif %}
 </div>

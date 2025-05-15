@@ -74,3 +74,23 @@ body {
 .submit-btn:hover {
     background-color: #45a049;
 }
+
+.form-group-inline {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+.form-group-inline div {
+    display: flex;
+    flex-direction: column;
+}
+.submit-btn {
+    margin-top: 15px;
+}
+
+select[multiple] {
+    height: auto;
+    min-height: 100px;
+}
+

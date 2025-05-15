@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Мои услуги</h2>
+<a href="{% url 'services:add_service' %}">Добавить услугу</a>
+<ul>
+    {% for service in services %}
+        <li>
+            <strong>{{ service.name }}</strong> — {{ service.price }} руб.
+            <br>{{ service.description }}
+        </li>
+    {% empty %}
+        <li>У вас пока нет добавленных услуг.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

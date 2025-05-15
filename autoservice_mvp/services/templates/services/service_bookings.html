@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'services/css/bookings.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="booking-list-section py-5">
+    <div class="container">
+        <h2 class="mb-4">Записи на услуги — {{ service.name }}</h2>
+
+        {% if bookings %}
+            <div class="booking-grid">
+                {% for booking in bookings %}
+                    <div class="booking-card">
+                        <h4>{{ booking.service.name }}</h4>
+                        <p class="booking-meta">
+                            Дата и время: <strong>{{ booking.date_time|date:"d.m.Y H:i" }}</strong><br>
+                            Клиент: <strong>{{ booking.user.username }}</strong>
+                        </p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>Пока нет записей.</p>
+        {% endif %}
+
+        <a href="{% url 'services:service_detail' pk=service.pk %}" class="btn btn-secondary mt-3">Назад к сервису</a>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'services/css/index.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <h1>{{ service.name }}</h1>
+        <p class="lead">Качественный ремонт и обслуживание автомобилей всех марок</p>
+
+        {% if not is_user %}
+            <button id="callBtn" class="btn btn-primary">Записаться</button>
+
+            <div id="phoneContainer" class="phone-container" style="display:none;">
+                <a href="tel:{{ service.phone|default:'+79991234567' }}" class="phone-link" style="color: white;">
+                    📞 {{ service.phone|default:"+7 (999) 123-45-67" }}
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+{% if is_user %}
+<!-- Форма добавления услуги -->
+<section class="add-service-section py-4">
+    <div class="container">
+        <h2>Добавить новую услугу</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ service_form.non_field_errors }}
+            <div class="form-group mb-3">
+                {{ service_form.name.label_tag }}<br>
+                {{ service_form.name }}
+                {{ service_form.name.errors }}
+            </div>
+            <div class="form-group mb-3">
+                {{ service_form.description.label_tag }}<br>
+                {{ service_form.description }}
+                {{ service_form.description.errors }}
+            </div>
+            <div class="form-group mb-3">
+                {{ service_form.price.label_tag }}<br>
+                {{ service_form.price }}
+                {{ service_form.price.errors }}
+            </div>
+            <button type="submit" name="add_service" class="btn btn-primary">Добавить услугу</button>
+        </form>
+    </div>
+</section>
+
+<!-- Форма добавления мастера -->
+<section class="add-master-section py-4 bg-light">
+    <div class="container">
+        <h2>Добавить нового мастера</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ master_form.non_field_errors }}
+            <div class="form-group mb-3">
+                {{ master_form.name.label_tag }}<br>
+                {{ master_form.name }}
+                {{ master_form.name.errors }}
+            </div>
+            <div class="form-group mb-3">
+                {{ master_form.specialization.label_tag }}<br>
+                {{ master_form.specialization }}
+                {{ master_form.specialization.errors }}
+            </div>
+            <div class="form-group mb-3">
+                {{ master_form.experience.label_tag }}<br>
+                {{ master_form.experience }}
+                {{ master_form.experience.errors }}
+            </div>
+            <button type="submit" name="add_master" class="btn btn-success">Добавить мастера</button>
+        </form>
+    </div>
+</section>
+{% endif %}
+
+<!-- Секция с услугами -->
+<section class="services-section py-5">
+    <div class="container">
+        <h2 class="section-title toggle-button" onclick="toggleServices()" style="cursor:pointer;">
+            Услуги автосервиса <span id="arrow">▼</span>
+        </h2>
+
+        <div id="servicesContainer" class="services-grid collapsed">
+            {% for item in services %}
+            <div class="service-card p-3 mb-3 border rounded">
+                <h3>{{ item.name }}</h3>
+                <p class="price">от {{ item.price }} руб.</p>
+
+                {% if request.user == item.autoservice.user %}
+                    <div class="service-actions">
+                        <a href="{% url 'services:edit_service' item.pk %}" class="btn btn-outline-primary btn-sm">Редактировать</a>
+                        <form action="{% url 'services:delete_service' item.pk %}" method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Удалить услугу?')">Удалить</button>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+            {% empty %}
+            <p>Услуги не добавлены.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- О сервисе -->
+<section class="about-section py-5 bg-secondary text-white">
+    <div class="container text-center">
+        <h2 class="about-title">О нашем сервисе</h2>
+        <p class="about-description">
+            Мы работаем на рынке автоуслуг более 10 лет. Наши специалисты имеют большой опыт работы с автомобилями различных марок и моделей.
+        </p>
+        <ul class="about-features list-unstyled d-flex justify-content-center gap-4">
+            <li><i class="fas fa-tools"></i> Современное оборудование</li>
+            <li><i class="fas fa-cogs"></i> Оригинальные запчасти</li>
+            <li><i class="fas fa-shield-alt"></i> Гарантия на работы</li>
+        </ul>
+    </div>
+</section>
+
+<!-- Секция с мастерами -->
+<section class="masters-section py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Наши мастера</h2>
+
+        <div class="row">
+            {% for master in masters %}
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="card text-white text-center h-100 p-3"
+                     style="background-color: {% cycle '#6c5ce7' '#00cec9' '#fd79a8' '#fab1a0' %}; border: none;">
+                    <div class="card-body d-flex flex-column justify-content-center">
+                        <h5 class="card-title mb-2">{{ master.name }}</h5>
+                        <p class="card-text mb-1"><strong>{{ master.specialization }}</strong></p>
+                        <p class="card-text">Стаж: {{ master.experience }} лет</p>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-center">Мастеров пока нет.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Отзывы клиентов -->
+<section class="reviews-section py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-5">Отзывы клиентов</h2>
+        <div class="row">
+            {% for review in reviews %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex mb-3">
+                            <div class="flex-shrink-0">
+                                <img src="{{ review.client.photo.url }}" width="60" height="60" class="rounded-circle" alt="{{ review.client.name }}">
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5 class="mt-0">{{ review.client.name }}</h5>
+                                <div class="text-warning">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= review.rating %}
+                                            <i class="fas fa-star"></i>
+                                        {% else %}
+                                            <i class="far fa-star"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        <p class="card-text">{{ review.text }}</p>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <small class="text-muted">{{ review.created_at|date:"d.m.Y" }}</small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Контактный CTA -->
+<section class="contact-cta py-5 bg-primary text-white">
+    <div class="container text-center">
+        <h2>Готовы записаться на обслуживание?</h2>
+        <p class="lead mb-4">Оставьте заявку и мы свяжемся с вами для уточнения деталей</p>
+        <a href="#" class="btn btn-light btn-lg">Записаться онлайн</a>
+        <p class="mt-3">
+            Или позвоните нам:
+            <a href="tel:{{ service.phone|default:'+79991234567' }}" class="text-white text-decoration-none">
+                {{ service.phone|default:"+7 (999) 123-45-67" }}
+            </a>
+        </p>
+    </div>
+</section>
+
+<!-- Карта Яндекс -->
+<script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
+<script type="text/javascript">
+    ymaps.ready(init);
+    function init(){
+        var myMap = new ymaps.Map("map", {
+            center: [53.902497, 27.561481],
+            zoom: 15
+        });
+
+        myMap.geoObjects.add(new ymaps.Placemark([53.902496, 27.561481], {
+            balloonContent: 'Наш автосервис'
+        }));
+    }
+
+    function toggleServices() {
+        const container = document.getElementById('servicesContainer');
+        const arrow = document.getElementById('arrow');
+
+        container.classList.toggle('collapsed');
+        arrow.textContent = container.classList.contains('collapsed') ? '▼' : '▲';
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const callBtn = document.getElementById('callBtn');
+        const phoneContainer = document.getElementById('phoneContainer');
+
+        if(callBtn) {
+            callBtn.addEventListener('click', function () {
+                if (phoneContainer.style.display === 'block') {
+                    phoneContainer.style.display = 'none';
+                } else {
+                    phoneContainer.style.display = 'block';
+                }
+            });
+        }
+    });
+</script>
+
+<div id="map" style="width: 100%; height: 400px;"></div>
+{% endblock %}

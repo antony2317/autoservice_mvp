@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'services/css/booking_success.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+    <div class="container">
+        <h1>Ваша запись успешна</h1>
+        <p>Вы записались на услугу: <strong>{{ booking.service.name }}</strong></p>
+        <p>Дата и время записи: <strong>{{ booking.date_time }}</strong></p>
+        <a href="{% url 'services:service_detail' pk=service.pk %}" class="btn btn-primary">Вернуться на главную</a>
+
+    </div>
+</section>
+{% endblock %}

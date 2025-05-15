@@ -2,12 +2,12 @@ from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-
 from .forms import RepairRequestForm, RepairResponseForm
 from .models import RepairRequest, RepairResponse
 from django.views.decorators.http import require_POST
 from django.contrib import messages
-
+from django.core.mail import send_mail
+from django.conf import settings
 from account.decorators import service_required
 from .tasks import notify_user_about_response
 
@@ -82,6 +82,55 @@ def respond_to_request(request, request_id):
     return redirect('repairs:service_dashboard')
 
 
+
+@login_required
+def accepted_responses_view(request):
+    responses = RepairResponse.objects.filter(service=request.user, is_accepted=True)
+    status_choices = RepairRequest.STATUS_CHOICES
+
+    return render(request, 'repairs/accept_response.html', {
+        'responses': responses,
+        'status_choices': status_choices,
+    })
+
+
+def change_request_status(request, request_id):
+    repair_request = get_object_or_404(RepairRequest, id=request_id)
+
+    # Только автосервис может менять статус
+    if not request.user.is_authenticated or not hasattr(request.user, 'autoservice'):
+        messages.error(request, "Только авторизованный автосервис может менять статус.")
+        return redirect('repairs:accepted_responses')
+
+    new_status = request.POST.get('status')
+    valid_statuses = dict(RepairRequest.STATUS_CHOICES)
+
+    if new_status in valid_statuses:
+        previous_status = repair_request.status
+        repair_request.status = new_status
+        repair_request.save()
+
+        # ✅ Отправить email, если статус стал "Завершена"
+        if new_status == 'completed' and previous_status != 'completed':
+            send_mail(
+                subject='Ваша заявка завершена',
+                message=(
+                    f'Здравствуйте, {repair_request.user.username}!\n\n'
+                    f'Ваша заявка на ремонт автомобиля "{repair_request.car}" была завершена.\n'
+                    f'Спасибо, что воспользовались нашим сервисом!'
+                ),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[repair_request.user.email],
+                fail_silently=False,
+            )
+
+        messages.success(request, "Статус успешно обновлён.")
+    else:
+        messages.error(request, "Недопустимый статус.")
+
+    return redirect('repairs:accepted_requests')
+
+
 @login_required
 def create_request(request):
     if request.method == 'POST':
@@ -103,7 +152,8 @@ def service_accepted_requests(request):
     accepted_responses = RepairResponse.objects.filter(
         service=request.user,
         is_accepted=True
-    ).select_related('repair_request__car', 'repair_request__user')
+    ).select_related('repair_request__car', 'repair_request__user') \
+     .order_by('-repair_request__created_at')  # Сортировка по дате создания заявки (новые — первыми)
 
     return render(request, 'repairs/service_accepted_requests.html', {
         'responses': accepted_responses

@@ -1,5 +1,9 @@
 <nav class="navbar">
-    <a href="{% url 'home' %}" class="logo">AutoService</a>
+    {% if user.is_authenticated and user.is_service %}
+        <a href="{% url 'services:service_detail' service.id %}" class="logo">AutoService</a>
+    {% else %}
+        <a href="{% url 'home' %}" class="logo">AutoService</a>
+    {% endif %}
 
     <ul class="nav-menu">
         {% if user.is_authenticated %}
@@ -16,6 +20,7 @@
                        Принятые заявки
                     </a>
                 </li>
+
                 <li>
                     <a href="{% url 'services:service_profile' %}"
                        class="nav-link {% if 'profile' in request.path %}active{% endif %}">

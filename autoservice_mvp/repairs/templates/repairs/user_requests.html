@@ -1,42 +1,61 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'repairs/css/accepted_responses.css' %}">
+{% endblock %}
 
 {% block content %}
-<h2>Мои заявки</h2>
+<div class="accepted-responses-container">
+    <h2>Принятые заявки</h2>
 
-{% for req in repair_requests %}
-<div class="request-block">
-    <p><strong>Авто:</strong> {{ req.car }}</p>
-    <p><strong>Описание:</strong> {{ req.description }}</p>
-    <p><strong>Статус:</strong> {{ req.get_status_display }}</p>
+    {% if responses %}
+        <div class="responses-list">
+            {% for response in responses %}
+                <div class="response-card">
+                    <div class="response-header">
+                        <div class="response-id">Заявка #{{ response.repair_request.id }}</div>
 
-    {% if req.responses.all %}
-        <h4>Ответы автосервисов:</h4>
-        {% for resp in req.responses.all %}
-            <div class="response">
-                <p>Сервис: {{ resp.service.username }}</p>
-                <p>Цена: {{ resp.proposed_price }}₽</p>
-                <p>Дата: {{ resp.proposed_date }}</p>
+                        <!-- Текущий статус -->
+                        <div class="response-status">
+                            <strong>Статус:</strong> {{ response.repair_request.get_status_display }}
+                        </div>
+                    </div>
 
-                {% if not resp.is_accepted %}
-                    <form method="post" action="{% url 'repairs:accept_response' resp.id %}">
-                        {% csrf_token %}
-                        <button type="submit">Принять предложение</button>
-                    </form>
-                {% else %}
-                    <span class="accepted">✅ Принято</span>
+                    <div class="response-body">
+                        <p><strong>Клиент:</strong> {{ response.repair_request.user.username }}</p>
+                        <p><strong>Автомобиль:</strong> {{ response.repair_request.car }}</p>
+                        <p><strong>Описание:</strong> {{ response.repair_request.description }}</p>
+                        <p><strong>Цена:</strong> {{ response.proposed_price }} ₽</p>
+                        <p><strong>Дата ремонта:</strong> {{ response.proposed_date }}</p>
 
-                    <!-- Кнопка входа в чат -->
-                    <a href="{% url 'chat:chat_between_users' req.id %}" class="btn btn-primary mt-2">
-                        💬 Перейти в чат
-                    </a>
-                {% endif %}
-            </div>
-        {% endfor %}
+                        <!-- Кнопка изменения статуса только для автосервиса -->
+                        <form method="post" action="{% url 'repairs:change_request_status' response.repair_request.id %}">
+                            {% csrf_token %}
+                            <div class="form-group mt-3">
+                                <label for="status"><strong>Изменить статус:</strong></label>
+                                <select name="status" class="form-select" onchange="this.form.submit()">
+                                    {% for value, label in status_choices %}
+                                        <option value="{{ value }}" {% if response.repair_request.status == value %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </form>
+
+                        <div class="chat-button-container mt-3">
+                            <a href="{% url 'chat:chat_between_users' request_id=response.repair_request.id %}"
+                               class="btn btn-primary">
+                                💬 Перейти в чат
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
     {% else %}
-        <p>Нет ответов</p>
+        <div class="no-responses">
+            <p>Нет подтвержденных заявок.</p>
+        </div>
     {% endif %}
 </div>
-<hr>
-{% endfor %}
-
 {% endblock %}
