@@ -23,7 +23,27 @@
     </div>
   </div>
 </section>
+<section class="services-section">
+  <div class="services-container">
+    <h2>Найди автосервис поблизости</h2>
 
+    <form method="get" class="search-form">
+      <input type="text" name="q" placeholder="Поиск по названию или адресу..." value="{{ search_query }}">
+      <button type="submit">Поиск</button>
+    </form>
+
+    <div class="services-grid">
+      {% for service in services_list %}
+        <a href="{% url 'services:service_detail' service.pk %}" class="service-card">
+          <h3>{{ service.name }}</h3>
+          <p>{{ service.address|default:"Адрес не указан" }}</p>
+        </a>
+      {% empty %}
+        <p>Ничего не найдено.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
 <section class="features" id="features">
   <div class="features-container">
     <div class="section-header animate">

@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Выберите заявку для отзыва</h2>
+
+{% if request_executor_pairs %}
+    <ul>
+        {% for req, executor, service_user in request_executor_pairs %}
+            <li>
+                Заявка #{{ req.id }} — {{ req.description|truncatewords:10 }}
+                {% if executor %}
+                    <a href="{% url 'reviews:create_review' request_id=req.id service_id=service_user.id %}">
+                        Оставить отзыв ({{ executor.name }})
+                    </a>
+                {% else %}
+                    (Исполнитель не найден)
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>Нет заявок для отзывов.</p>
+{% endif %}
+
+{% endblock %}

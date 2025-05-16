@@ -14,5 +14,5 @@ urlpatterns = [
     path('chat/', include('chat.urls', namespace='chat')),
     path('dashboard/', include(('dashboard.urls', 'dashboard'))),
     path('api/', include('api.urls')),
-
+    path('reviews/', include('reviews.urls')),
 ]

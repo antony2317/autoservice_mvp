@@ -150,55 +150,12 @@
 </section>
 
 <!-- Отзывы клиентов -->
-<section class="reviews-section py-5 bg-light">
-    <div class="container">
-        <h2 class="text-center mb-5">Отзывы клиентов</h2>
-        <div class="row">
-            {% for review in reviews %}
-            <div class="col-md-4 mb-4">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <div class="d-flex mb-3">
-                            <div class="flex-shrink-0">
-                                <img src="{{ review.client.photo.url }}" width="60" height="60" class="rounded-circle" alt="{{ review.client.name }}">
-                            </div>
-                            <div class="flex-grow-1 ms-3">
-                                <h5 class="mt-0">{{ review.client.name }}</h5>
-                                <div class="text-warning">
-                                    {% for i in "12345" %}
-                                        {% if forloop.counter <= review.rating %}
-                                            <i class="fas fa-star"></i>
-                                        {% else %}
-                                            <i class="far fa-star"></i>
-                                        {% endif %}
-                                    {% endfor %}
-                                </div>
-                            </div>
-                        </div>
-                        <p class="card-text">{{ review.text }}</p>
-                    </div>
-                    <div class="card-footer bg-transparent">
-                        <small class="text-muted">{{ review.created_at|date:"d.m.Y" }}</small>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</section>
 
 <!-- Контактный CTA -->
-<section class="contact-cta py-5 bg-primary text-white">
-    <div class="container text-center">
-        <h2>Готовы записаться на обслуживание?</h2>
-        <p class="lead mb-4">Оставьте заявку и мы свяжемся с вами для уточнения деталей</p>
-        <a href="#" class="btn btn-light btn-lg">Записаться онлайн</a>
-        <p class="mt-3">
-            Или позвоните нам:
-            <a href="tel:{{ service.phone|default:'+79991234567' }}" class="text-white text-decoration-none">
-                {{ service.phone|default:"+7 (999) 123-45-67" }}
-            </a>
-        </p>
+<section class="contact-cta">
+    <div class="container">
+        <h2>Вы можете найти нас по адресу: {{ service.address }}</h2>
+        <h3>Наши контакты: 📞 {{ service.phone|default:"+7 (999) 123-45-67" }}</h3>
     </div>
 </section>
 

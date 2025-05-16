@@ -382,29 +382,7 @@ input, textarea {
     background-color: #2980b9;
 }
 
-/* Контакты */
-.contact-cta {
-    background-color: #fff;
-    padding: 4rem 0;
-}
 
-.contact-cta h2 {
-    font-weight: 700;
-}
-
-.contact-cta .btn-lg {
-    padding: 0.75rem 1.5rem;
-    font-size: 1.1rem;
-}
-
-.contact-cta a {
-    color: #007bff;
-    text-decoration: none;
-}
-
-.contact-cta a:hover {
-    text-decoration: underline;
-}
 
 /* Мобильные стили */
 @media (max-width: 768px) {
@@ -468,3 +446,47 @@ input, textarea {
     text-decoration: underline;
 }
 
+.contact-cta {
+    background: linear-gradient(135deg, #4a90e2, #357ABD);
+    color: #fff;
+    padding: 3rem 2rem;
+    border-radius: 16px;
+    text-align: center;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    margin: 3rem auto;
+    max-width: 1000px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    transition: background 0.3s ease;
+}
+
+.contact-cta h2,
+.contact-cta h3 {
+    margin: 1rem 0;
+    line-height: 1.4;
+}
+
+.contact-cta h2 {
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.contact-cta h3 {
+    font-size: 1.3rem;
+    font-weight: 400;
+    opacity: 0.95;
+}
+
+/* Адаптация под мобильные */
+@media (max-width: 768px) {
+    .contact-cta {
+        padding: 2rem 1rem;
+    }
+
+    .contact-cta h2 {
+        font-size: 1.5rem;
+    }
+
+    .contact-cta h3 {
+        font-size: 1.1rem;
+    }
+}

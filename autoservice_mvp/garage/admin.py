@@ -2,8 +2,9 @@ from django.contrib import admin
 from django.contrib.auth import get_user_model
 from unfold.admin import ModelAdmin, TabularInline
 
-from .models import Garage, Car, ServiceRecord, ServiceRequest
+from .models import Car, ServiceRecord, ServiceRequest
 from .models import CAR_BRANDS
+
 from django.utils.html import format_html
 
 User = get_user_model()
@@ -15,30 +16,7 @@ admin.site.index_title = "Управление данными"
 
 
 # Класс для модели Garage
-@admin.register(Garage)
-class GarageAdmin(ModelAdmin):
-    list_display = ('name', 'short_address', 'phone', 'specialization')
-    search_fields = ('name', 'address', 'phone', 'specialization')
-    list_filter = ('specialization',)
-    ordering = ('name',)
 
-    fieldsets = (
-        ('Основная информация', {
-            'fields': ('name', 'specialization')
-        }),
-        ('Контактные данные', {
-            'fields': ('address', 'phone')
-        }),
-    )
-
-    def short_address(self, obj):
-        return obj.address[:50] + '...' if len(obj.address) > 50 else obj.address
-
-    short_address.short_description = 'Адрес'
-
-    class Meta:
-        verbose_name = 'Автосервис'
-        verbose_name_plural = 'Автосервисы'
 
 
 # Класс для модели Car
@@ -82,16 +60,16 @@ class CarAdmin(ModelAdmin):
 # Класс для модели ServiceRecord
 @admin.register(ServiceRecord)
 class ServiceRecordAdmin(ModelAdmin):
-    list_display = ('car_info', 'garage', 'date', 'service_type', 'cost_display', 'has_receipt')
-    list_filter = ('service_type', 'garage', 'date')
-    search_fields = ('car__brand', 'car__model', 'description', 'garage__name')
-    raw_id_fields = ('car', 'garage', 'created_by')
+    list_display = ('car_info', 'autoservice', 'date', 'service_type', 'cost_display', 'has_receipt')
+    list_filter = ('service_type', 'autoservice', 'date')
+    search_fields = ('car__brand', 'car__model', 'description', 'autoservice__name')
+    raw_id_fields = ('car', 'autoservice', 'created_by')
     date_hierarchy = 'date'
     list_per_page = 20
 
     fieldsets = (
         ('Общая информация', {
-            'fields': ('car', 'garage', 'date', 'mileage')
+            'fields': ('car', 'autoservice', 'date', 'mileage')
         }),
         ('Детали обслуживания', {
             'fields': ('service_type', 'description', 'cost')
@@ -103,23 +81,21 @@ class ServiceRecordAdmin(ModelAdmin):
 
     def car_info(self, obj):
         return f"{obj.car.brand} {obj.car.model} ({obj.car.user})"
-
     car_info.short_description = 'Автомобиль'
 
     def cost_display(self, obj):
         return f"{obj.cost} ₽" if obj.cost else "-"
-
     cost_display.short_description = 'Стоимость'
 
     def has_receipt(self, obj):
         return bool(obj.receipt)
-
     has_receipt.boolean = True
     has_receipt.short_description = 'Наличие чека'
 
     class Meta:
         verbose_name = 'Запись о сервисе'
         verbose_name_plural = 'Записи о сервисе'
+
 
 
 # Класс для модели ServiceRequest

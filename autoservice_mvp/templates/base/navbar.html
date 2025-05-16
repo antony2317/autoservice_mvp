@@ -1,8 +1,8 @@
 <nav class="navbar">
     {% if user.is_authenticated and user.is_service %}
-        <a href="{% url 'services:service_detail' service.id %}" class="logo">AutoService</a>
+        <a href="{% url 'services:service_detail' service.id %}" class="logo">DriveDoc</a>
     {% else %}
-        <a href="{% url 'home' %}" class="logo">AutoService</a>
+        <a href="{% url 'home' %}" class="logo">DriveDoc</a>
     {% endif %}
 
     <ul class="nav-menu">

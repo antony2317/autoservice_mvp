@@ -2,7 +2,8 @@ import datetime
 
 from django.contrib.auth import get_user_model
 from django.db import models
-from account.models import User
+from account.models import User, AutoService
+
 
 
 class Garage(models.Model):
@@ -194,22 +195,20 @@ class Car(models.Model):
         verbose_name_plural = 'Автомобили'
 
 
+ # если еще не импортировано
+
 class ServiceRecord(models.Model):
     car = models.ForeignKey(Car, on_delete=models.CASCADE)
-    garage = models.ForeignKey(Garage, on_delete=models.SET_NULL, null=True, blank=True)
-    date = models.DateField()  # Дата обслуживания
-    mileage = models.PositiveIntegerField()  # Пробег на момент обслуживания
-    service_type = models.CharField(max_length=100, verbose_name='Вид работ')  # Вид работ ("Замена масла")
-    description = models.TextField(blank=True)  # Детали
-    cost = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, verbose_name='Цена')  # Стоимость
-    receipt = models.FileField(upload_to='service_receipts/', blank=True, verbose_name='фото чека(не обязательно)')  # Чек (PDF/фото)
+    autoservice = models.ForeignKey(AutoService, on_delete=models.SET_NULL, null=True, blank=True)  # заменили garage
+    date = models.DateField()
+    mileage = models.PositiveIntegerField()
+    service_type = models.CharField(max_length=100, verbose_name='Вид работ')
+    description = models.TextField(blank=True)
+    cost = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, verbose_name='Цена')
+    receipt = models.FileField(upload_to='service_receipts/', blank=True, verbose_name='фото чека(не обязательно)')
     created_by = models.ForeignKey(
-        get_user_model(),
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        editable=False,
-        verbose_name='Создатель записи'
+        get_user_model(), on_delete=models.SET_NULL,
+        null=True, blank=True, editable=False, verbose_name='Создатель записи'
     )
 
     def __str__(self):

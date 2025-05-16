@@ -59,6 +59,8 @@ INSTALLED_APPS = [
     'dashboard',
     'rest_framework',
     'api',
+    'reviews',
+
 ]
 
 
@@ -122,6 +124,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'services.context_processors.service_context',
+                'reviews.context_processors.reviews_context',
             ],
         },
     },

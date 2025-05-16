@@ -10,7 +10,7 @@
     <h2>{{ car.brand }} {{ car.model }}</h2>
     <p class="car-meta">Год: {{ car.year }} | Пробег: {{ car.mileage }} км</p>
 
-    <h3>История обслуживания</h3>
+   <h3>История обслуживания</h3>
 
     {% if service_history %}
     <ul class="service-history">
@@ -29,7 +29,12 @@
                 {% endif %}
             </div>
             <p>{{ record.description }}</p>
-            {% if record.cost %}<span class="cost">{{ record.cost }} ₽</span>{% endif %}
+            {% if record.cost %}
+                <span class="cost">{{ record.cost }} ₽</span>
+            {% elif repair_cost %}
+                <!-- Если для записи нет стоимости, показываем цену из заявки -->
+                <span class="cost">Стоимость ремонта: {{ repair_cost }} ₽</span>
+            {% endif %}
             <small class="record-meta">Добавлено: {{ record.created_by.username|default:"Система" }}</small>
         </li>
         {% endfor %}

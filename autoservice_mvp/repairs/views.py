@@ -10,9 +10,8 @@ from django.core.mail import send_mail
 from django.conf import settings
 from account.decorators import service_required
 from .tasks import notify_user_about_response
-
-
-
+from django.utils import timezone
+from garage.models import ServiceRecord
 
 
 @login_required
@@ -110,8 +109,20 @@ def change_request_status(request, request_id):
         repair_request.status = new_status
         repair_request.save()
 
-        # ✅ Отправить email, если статус стал "Завершена"
+        # Отправить email, если статус стал "Завершена"
         if new_status == 'completed' and previous_status != 'completed':
+            # Создаем запись в истории обслуживания
+            ServiceRecord.objects.create(
+                car=repair_request.car,
+                autoservice=getattr(request.user, 'autoservice', None),
+                date=timezone.now().date(),
+                mileage=repair_request.car.mileage,  # или пробег, если есть в заявке
+                service_type=getattr(repair_request, 'service_type', 'Ремонт'),
+                description=getattr(repair_request, 'description', ''),
+                cost=None,  # Можно расширить форму, чтобы получать стоимость при закрытии
+                created_by=request.user
+            )
+
             send_mail(
                 subject='Ваша заявка завершена',
                 message=(
@@ -190,12 +201,19 @@ def accept_response(request, response_id):
     response = get_object_or_404(RepairResponse, id=response_id)
 
     if request.user == response.repair_request.user:
-        response.is_accepted = True
-        response.save()
-        response.repair_request.status = 'in_progress'
-        response.repair_request.save()
+        executor = getattr(response.service, 'autoservice', None)
+        if executor is None:
+            messages.error(request, 'Для сервиса не задан исполнитель (AutoService)')
+        else:
+            response.is_accepted = True
+            response.save()
 
-        messages.success(request, 'Предложение принято! Заявка в работе.')
+            repair_request = response.repair_request
+            repair_request.status = 'in_progress'
+            repair_request.executor = executor
+            repair_request.save()
+
+            messages.success(request, 'Предложение принято! Заявка в работе.')
     else:
         messages.error(request, 'Ошибка: у вас нет прав для этого действия')
 
@@ -206,3 +224,6 @@ def accept_response(request, response_id):
 def my_requests(request):
     repair_requests = RepairRequest.objects.filter(user=request.user).order_by('-created_at').prefetch_related('responses')
     return render(request, 'chat/chat_room.html', {'repair_requests': repair_requests})
+
+
+
