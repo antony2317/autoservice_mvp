@@ -18,9 +18,9 @@ class Service(models.Model):
 
 class Master(models.Model):
     autoservice = models.ForeignKey(AutoService, related_name="masters", on_delete=models.CASCADE)
-    name = models.CharField(max_length=100)
-    specialization = models.CharField(max_length=200)
-    experience = models.PositiveIntegerField(default=0)
+    name = models.CharField(max_length=100, verbose_name='Имя')
+    specialization = models.CharField(max_length=200, verbose_name='Специализация')
+    experience = models.PositiveIntegerField(default=0, verbose_name='Стаж')
 
     def __str__(self):
         return self.name

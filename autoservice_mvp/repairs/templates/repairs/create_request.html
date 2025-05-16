@@ -12,27 +12,36 @@
             <h3>Новая заявка на ремонт</h3>
         </div>
         <div class="form-body">
-            <form method="post" class="repair-form">
-                {% csrf_token %}
 
-                <div class="form-group">
-                    <label for="{{ form.car.id_for_label }}" class="form-label">
-                        Автомобиль
-                    </label>
-                    {{ form.car }}
+            {% if form.fields.car.queryset.count == 0 %}
+
+                <div style="text-align: center; margin-top: 1rem;">
+                    <p>У вас пока нет добавленных автомобилей.</p>
+                    <a href="{% url 'add_car' %}" class="btn btn-primary">Добавить автомобиль</a>
                 </div>
+            {% else %}
+                <form method="post" class="repair-form">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="{{ form.car.id_for_label }}" class="form-label">
+                            Автомобиль
+                        </label>
+                        {{ form.car }}
+                    </div>
 
-                <div class="form-group">
-                    <label for="{{ form.description.id_for_label }}" class="form-label">
-                        Описание проблемы
-                    </label>
-                    {{ form.description }}
-                </div>
+                    <div class="form-group">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">
+                            Описание проблемы
+                        </label>
+                        {{ form.description }}
+                    </div>
 
-                <button type="submit" class="submit-button">
-                    Отправить заявку
-                </button>
-            </form>
+                    <button type="submit" class="submit-button">
+                        Отправить заявку
+                    </button>
+                </form>
+            {% endif %}
+
         </div>
     </div>
 </div>
