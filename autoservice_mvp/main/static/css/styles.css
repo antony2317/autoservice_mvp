@@ -371,3 +371,17 @@ h1, h2, h3 {
   font-size: 0.95rem;
 }
 
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.content {
+    flex: 1;
+}

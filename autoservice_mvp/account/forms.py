@@ -2,6 +2,8 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import User, AutoService
 from django.utils.translation import gettext_lazy as _
+from django.core.exceptions import ValidationError
+from django.contrib.auth.forms import PasswordResetForm
 
 
 class UserRegisterForm(UserCreationForm):
@@ -10,6 +12,18 @@ class UserRegisterForm(UserCreationForm):
     class Meta:
         model = User
         fields = ['username', 'email', 'password1', 'password2']
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exists():
+            raise ValidationError(_("Пользователь с таким email уже существует"))
+        return email
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if User.objects.filter(username=username).exists():
+            raise ValidationError(_("Пользователь с таким именем уже существует"))
+        return username
 
 
 class ServiceRegisterForm(UserCreationForm):
@@ -65,6 +79,31 @@ class ServiceRegisterForm(UserCreationForm):
             }),
         }
 
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exists():
+            raise ValidationError(_("Пользователь с таким email уже существует"))
+        return email
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if User.objects.filter(username=username).exists():
+            raise ValidationError(_("Пользователь с таким именем уже существует"))
+        return username
+
 
 class UserLoginForm(AuthenticationForm):
     username = forms.CharField(label='Email/Username')
+
+
+class UserLoginForm(AuthenticationForm):
+    username = forms.CharField(label='Email/Username')
+
+
+class CustomPasswordResetForm(PasswordResetForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['email'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Введите ваш email'
+        })

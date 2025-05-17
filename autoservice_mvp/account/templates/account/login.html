@@ -25,6 +25,10 @@
         </div>
         {% endfor %}
 
+        <div class="password-reset-link">
+            <a href="{% url 'account:password_reset' %}" class="text-sm text-primary hover:underline">Забыли пароль?</a>
+        </div>
+
         <button type="submit" class="btn btn-primary w-full">Войти</button>
     </form>
 

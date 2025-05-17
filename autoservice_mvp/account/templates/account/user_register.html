@@ -37,4 +37,16 @@
         </p>
     </div>
 </div>
+
+<script>
+document.querySelector('[name="email"]').addEventListener('blur', function() {
+    fetch('/validate_email/?email=' + this.value)
+        .then(response => response.json())
+        .then(data => {
+            if (data.exists) {
+                alert('Этот email уже занят');
+            }
+        });
+});
+</script>
 {% endblock %}
