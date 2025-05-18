@@ -8,8 +8,6 @@
 
 {% block content %}
 <div class="repair-requests-container">
-
-
     <!-- Новые заявки -->
     <div id="new-requests" class="requests-tab-content active">
         <h2><i class="fas fa-inbox"></i> Новые заявки</h2>
@@ -30,13 +28,13 @@
                         {% csrf_token %}
                         <div class="form-group">
                             <label>Цена (₽)</label>
-                            <input type="number" name="proposed_price" required min="1" step="0.01">
+                            <input type="number" name="proposed_price" required min="1" step="0.01" class="form-control">
                         </div>
                         <div class="form-group">
                             <label>Дата ремонта</label>
-                            <input type="date" name="proposed_date" required min="{{ today|date:'Y-m-d' }}">
+                            <input type="date" name="proposed_date" required min="{{ today|date:'Y-m-d' }}" class="form-control">
                         </div>
-                        <button type="submit" class="submit-btn">
+                        <button type="submit" class="btn btn-primary submit-btn">
                             <i class="fas fa-paper-plane"></i> Отправить предложение
                         </button>
                     </form>
@@ -51,8 +49,6 @@
         </div>
         {% endif %}
     </div>
-
-
 </div>
 
 <div id="notification-modal" class="modal">
@@ -66,20 +62,6 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Управление вкладками
-    const tabs = document.querySelectorAll('.tab-btn');
-    tabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-            tabs.forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
-
-            document.querySelectorAll('.requests-tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            document.getElementById(this.dataset.tab).classList.add('active');
-        });
-    });
-
     // Обработка отправки форм
     document.querySelectorAll('.response-form').forEach(form => {
         form.addEventListener('submit', async function(e) {
@@ -96,30 +78,35 @@ document.addEventListener('DOMContentLoaded', function() {
                     method: 'POST',
                     body: formData,
                     headers: {
-                        'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                        'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
+                        'X-Requested-With': 'XMLHttpRequest'
                     }
                 });
 
                 const result = await response.json();
 
+                if (!response.ok) {
+                    throw new Error(result.error || 'Произошла ошибка при отправке');
+                }
+
                 if (result.success) {
                     showModal('Ваше предложение успешно отправлено!');
-                    requestCard.remove();
+                    requestCard.style.opacity = '0';
+                    setTimeout(() => {
+                        requestCard.remove();
 
-                    // Обновляем список если нет заявок
-                    if (!document.querySelector('#new-requests .request-card')) {
-                        document.querySelector('#new-requests .requests-list').innerHTML = `
-                            <div class="no-requests">
-                                <i class="fas fa-check-circle"></i>
-                                <p>Нет новых заявок</p>
-                            </div>
-                        `;
-                    }
-                } else {
-                    showModal(result.error || 'Произошла ошибка', true);
+                        if (!document.querySelector('#new-requests .request-card')) {
+                            document.querySelector('#new-requests .requests-list').innerHTML = `
+                                <div class="no-requests">
+                                    <i class="fas fa-check-circle"></i>
+                                    <p>Нет новых заявок</p>
+                                </div>
+                            `;
+                        }
+                    }, 500);
                 }
             } catch (error) {
-                showModal('Ошибка сети: ' + error.message, true);
+                showModal(error.message, true);
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Отправить предложение';
@@ -133,16 +120,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const modalContent = modal.querySelector('.modal-content');
         const messageEl = document.getElementById('modal-message');
 
-        if (isError) {
-            modalContent.classList.add('error');
-        } else {
-            modalContent.classList.remove('error');
-        }
-
+        modalContent.classList.toggle('error', isError);
         messageEl.textContent = message;
         modal.style.display = 'block';
 
-        // Автоматическое закрытие через 5 секунд
         setTimeout(() => {
             modal.style.display = 'none';
         }, 5000);

@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.forms import modelformset_factory
 from django.shortcuts import render, redirect, get_object_or_404
-from .forms import AutoServiceProfileForm, ServiceForm, MasterForm
+from .forms import AutoServiceProfileForm, ServiceForm, MasterForm, ServiceDescriptionForm
 from account.models import AutoService
 from repairs.models import RepairResponse, RepairRequest
 from .models import Service
@@ -52,33 +52,38 @@ def service_detail(request, pk):
     masters = service.masters.all()
     is_user = request.user == service.user
 
-    can_leave_review = request.user.is_authenticated and request.user != service.user
-
-    # Отзывы для данного сервиса (через user-сервис)
-    reviews = Review.objects.filter(service=service.user).order_by('-created_at')
 
     if request.user.is_authenticated:
         has_reviewed = Review.objects.filter(user=request.user, service=service.user).exists()
     else:
         has_reviewed = False
-
     can_leave_review = request.user.is_authenticated and request.user != service.user and not has_reviewed
 
-    # Инициализируем формы по умолчанию
+
     service_form = ServiceForm()
     master_form = MasterForm()
     review_form = ReviewForm(user=request.user, service=service.user)
+    description_form = ServiceDescriptionForm(instance=service)
 
     if request.method == 'POST':
         if is_user:
-            # владельцу не нужно обрабатывать отзывы
-            if 'add_service' in request.POST:
+
+            if 'update_description' in request.POST:
+                description_form = ServiceDescriptionForm(request.POST, instance=service)
+                if description_form.is_valid():
+                    description_form.save()
+                    return redirect('services:service_detail', pk=pk)
+
+
+            elif 'add_service' in request.POST:
                 service_form = ServiceForm(request.POST)
                 if service_form.is_valid():
                     new_service = service_form.save(commit=False)
                     new_service.autoservice = service
                     new_service.save()
                     return redirect('services:service_detail', pk=pk)
+
+
             elif 'add_master' in request.POST:
                 master_form = MasterForm(request.POST)
                 if master_form.is_valid():
@@ -86,16 +91,19 @@ def service_detail(request, pk):
                     new_master.autoservice = service
                     new_master.save()
                     return redirect('services:service_detail', pk=pk)
-        else:
-            # пользователь оставляет отзыв
-            if 'add_review' in request.POST:
-                review_form = ReviewForm(request.POST, user=request.user, service=service.user)
-                if review_form.is_valid():
-                    review = review_form.save(commit=False)
-                    review.service = service.user
-                    review.user = request.user
-                    review.save()
-                    return redirect('services:service_detail', pk=pk)
+
+
+        elif 'add_review' in request.POST and can_leave_review:
+            review_form = ReviewForm(request.POST, user=request.user, service=service.user)
+            if review_form.is_valid():
+                review = review_form.save(commit=False)
+                review.service = service.user
+                review.user = request.user
+                review.save()
+                return redirect('services:service_detail', pk=pk)
+
+
+    reviews = Review.objects.filter(service=service.user).order_by('-created_at')
 
     context = {
         'service': service,
@@ -103,6 +111,7 @@ def service_detail(request, pk):
         'masters': masters,
         'service_form': service_form,
         'master_form': master_form,
+        'description_form': description_form,  # Добавляем форму описания в контекст
         'is_user': is_user,
         'reviews': reviews,
         'review_form': review_form,

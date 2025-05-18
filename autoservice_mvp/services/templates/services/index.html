@@ -25,6 +25,23 @@
 </section>
 
 {% if is_user %}
+<section class="edit-description-section py-4 bg-light">
+    <div class="container">
+        <h2>Редактировать описание сервиса</h2>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="update_description" value="true">
+            {{ description_form.non_field_errors }}
+            <div class="form-group mb-3">
+                {{ description_form.description.label_tag }}<br>
+                {{ description_form.description }}
+                {{ description_form.description.errors }}
+            </div>
+            <button type="submit" class="btn btn-primary">Обновить описание</button>
+        </form>
+    </div>
+</section>
+
 <!-- Форма добавления услуги -->
 <section class="add-service-section py-4">
     <div class="container">
@@ -115,13 +132,8 @@
     <div class="container text-center">
         <h2 class="about-title">О нашем сервисе</h2>
         <p class="about-description">
-            Мы работаем на рынке автоуслуг более 10 лет. Наши специалисты имеют большой опыт работы с автомобилями различных марок и моделей.
+            {{ service.description|default:"Мы работаем на рынке автоуслуг более 10 лет. Наши специалисты имеют большой опыт работы с автомобилями различных марок и моделей." }}
         </p>
-        <ul class="about-features list-unstyled d-flex justify-content-center gap-4">
-            <li><i class="fas fa-tools"></i> Современное оборудование</li>
-            <li><i class="fas fa-cogs"></i> Оригинальные запчасти</li>
-            <li><i class="fas fa-shield-alt"></i> Гарантия на работы</li>
-        </ul>
     </div>
 </section>
 

@@ -1,6 +1,12 @@
 <nav class="navbar">
-    {% if user.is_authenticated and user.is_service %}
-        <a href="{% url 'services:service_detail' service.id %}" class="logo">DriveDoc</a>
+    {% if user.is_authenticated %}
+        {% if user.is_service %}
+            <a href="{% url 'services:service_detail' service.id %}" class="logo">DriveDoc</a>
+        {% elif user.is_superuser or user.role == 'manager' %}
+            <a href="{% url 'dashboard:dashboard' %}" class="logo">DriveDoc</a>
+        {% else %}
+            <a href="{% url 'home' %}" class="logo">DriveDoc</a>
+        {% endif %}
     {% else %}
         <a href="{% url 'home' %}" class="logo">DriveDoc</a>
     {% endif %}
@@ -20,7 +26,6 @@
                        Принятые заявки
                     </a>
                 </li>
-
                 <li>
                     <a href="{% url 'services:service_profile' %}"
                        class="nav-link {% if 'profile' in request.path %}active{% endif %}">
@@ -40,12 +45,14 @@
                        Главная
                     </a>
                 </li>
+                {% if not user.is_superuser and not user.role == 'manager' %}
                 <li>
                     <a href="{% url 'garage' %}"
                        class="nav-link {% if '/garage/' in request.path %}active{% endif %}">
                        Гараж
                     </a>
                 </li>
+                {% endif %}
             {% endif %}
         {% else %}
             <li>

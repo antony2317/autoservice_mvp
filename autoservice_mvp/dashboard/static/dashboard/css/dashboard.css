@@ -1,59 +1,186 @@
-.dashboard-container {
-    max-width: 1000px;
-    margin: auto;
-    padding: 2rem;
-    font-family: 'Segoe UI', sans-serif;
+/* Основные стили */
+.admin-dashboard {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-.title {
-    font-size: 2rem;
-    margin-bottom: 1.5rem;
+.dashboard-title {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #2d3748;
+  text-align: center;
+  margin-bottom: 2.5rem;
+  position: relative;
 }
 
-.stats-cards {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    margin-bottom: 2rem;
+.dashboard-title::after {
+  content: '';
+  display: block;
+  width: 80px;
+  height: 4px;
+  background: #4299e1;
+  margin: 0.5rem auto 0;
+  border-radius: 2px;
 }
 
-.card {
-    flex: 1 1 200px;
-    background: #ffffff;
-    border: 1px solid #ccc;
-    border-radius: 12px;
-    padding: 1.2rem;
-    text-align: center;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-    cursor: pointer;
-    transition: transform 0.2s ease;
+/* Сетка карточек */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
 }
 
-.card:hover {
-    transform: scale(1.02);
-    background-color: #f8fafc;
+/* Общие стили карточек */
+.stat-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  position: relative;
 }
 
-.toggle-section {
-    display: none;
-    background: #f9fafb;
-    border: 1px solid #e2e8f0;
-    padding: 1rem;
-    border-radius: 8px;
-    margin-bottom: 2rem;
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
 }
 
-.toggle-section h3 {
-    margin-top: 0;
-    font-size: 1.2rem;
+.card-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  margin-bottom: 1rem;
 }
 
-.toggle-section ul {
-    list-style: none;
-    padding: 0;
+.card-icon svg {
+  width: 24px;
+  height: 24px;
 }
 
-.toggle-section li {
-    padding: 0.5rem 0;
-    border-bottom: 1px solid #e2e8f0;
+.card-content {
+  flex: 1;
 }
+
+.stat-card h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #2d3748;
+}
+
+.stat-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0.5rem 0;
+  line-height: 1;
+}
+
+.stat-card p {
+  color: #718096;
+  font-size: 0.875rem;
+  margin-bottom: 1.5rem;
+}
+
+.card-link {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: center;
+  transition: all 0.2s ease;
+  margin-top: auto;
+  align-self: flex-start;
+}
+
+/* Индивидуальные стили карточек */
+.user-card {
+  border-top: 4px solid #4299e1;
+}
+
+.user-card .card-icon {
+  background-color: #ebf8ff;
+  color: #4299e1;
+}
+
+.user-card .card-link {
+  background-color: #ebf8ff;
+  color: #2b6cb0;
+}
+
+.user-card .card-link:hover {
+  background-color: #bee3f8;
+}
+
+.service-card {
+  border-top: 4px solid #48bb78;
+}
+
+.service-card .card-icon {
+  background-color: #f0fff4;
+  color: #48bb78;
+}
+
+.service-card .card-link {
+  background-color: #f0fff4;
+  color: #2f855a;
+}
+
+.service-card .card-link:hover {
+  background-color: #c6f6d5;
+}
+
+.request-card {
+  border-top: 4px solid #ed8936;
+}
+
+.request-card .card-icon {
+  background-color: #fffaf0;
+  color: #ed8936;
+}
+
+.request-card .card-link {
+  background-color: #fffaf0;
+  color: #c05621;
+}
+
+.request-card .card-link:hover {
+  background-color: #feebc8;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .dashboard-title {
+    font-size: 1.5rem;
+  }
+}
+
+.service-card .card-icon svg {
+  width: 28px;
+  height: 28px;
+  stroke-width: 1.5;
+}
+
+.service-card:hover .card-icon svg {
+  animation: rotate 4s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }

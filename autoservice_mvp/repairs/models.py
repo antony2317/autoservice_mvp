@@ -1,3 +1,4 @@
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.conf import settings
 from garage.models import Car
@@ -64,10 +65,15 @@ class RepairResponse(models.Model):
     service = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        limit_choices_to={'is_service': True},
+        limit_choices_to={'role': 'service'},  # Изменено с is_service на role
         verbose_name='Автосервис'
     )
-    proposed_price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Цена')
+    proposed_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        verbose_name='Цена',
+        validators=[MinValueValidator(0.01)]  # Добавлен валидатор
+    )
     proposed_date = models.DateField(verbose_name='Предложенная дата ремонта')
     is_accepted = models.BooleanField(default=False, verbose_name='Подтверждено пользователем')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -75,6 +81,12 @@ class RepairResponse(models.Model):
     class Meta:
         verbose_name = 'Ответ на заявку'
         verbose_name_plural = 'Ответы на заявки'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['repair_request', 'service'],
+                name='unique_response_per_service'
+            )
+        ]
 
     def __str__(self):
         return f"Ответ от {self.service.username} на заявку #{self.repair_request.id}"
@@ -85,3 +97,7 @@ class RepairResponse(models.Model):
 
         if self.proposed_price <= 0:
             raise ValidationError("Цена должна быть положительной")
+
+        # Проверка что пользователь действительно сервис
+        if self.service.role != 'service':
+            raise ValidationError("Откликать могут только автосервисы")

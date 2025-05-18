@@ -1,66 +1,129 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import user_passes_test
+from django.contrib import messages
+from account.models import User, AutoService
+from repairs.models import RepairRequest
 from django.contrib.auth import get_user_model
-from django.db.models.functions import TruncMonth
-from django.db.models import Count
-from django.utils.dateparse import parse_date
-from repairs.models import RepairRequest, RepairResponse
-from account.models import AutoService
-import xlwt
-from django.http import HttpResponse
+from django.db.models import Case, When, Value, IntegerField
 
-import datetime
+def is_admin(user):
+    return user.is_superuser or user.is_staff
 
-User = get_user_model()
 
-def admin_dashboard(request):
-    users = User.objects.filter(is_staff=False)
-    services = User.objects.filter(is_service=True)
-    repair_requests = RepairRequest.objects.all()
-    responses = RepairResponse.objects.all()
+def dashboard(request):
+    User = get_user_model()
+    users_count = User.objects.filter(role='customer').exclude(is_superuser=True).count()
 
     context = {
-        'user_count': users.count(),
-        'service_count': services.count(),
-        'request_count': repair_requests.count(),
-        'response_count': responses.count(),
-        'users': users,
-        'services': services,
-        'repair_requests': repair_requests,
-        'responses': responses,
+        'users_count': users_count,
+        'services_count': AutoService.objects.count(),
+        'requests_count': RepairRequest.objects.count(),
     }
-    return render(request, 'dashboard/admin_dashboard.html', context)
+    return render(request, 'dashboard/dashboard.html', context)
 
+@user_passes_test(is_admin)
+def user_list(request):
+    users = User.objects.filter(role__in=['manager', 'customer']).exclude(is_superuser=True).annotate(
+        role_priority=Case(
+            When(role='manager', then=Value(1)),
+            default=Value(2),
+            output_field=IntegerField(),
+        )
+    ).order_by('role_priority', 'username')
 
+    return render(request, 'dashboard/users.html', {'users': users})
 
-def export_excel(request):
-    date_from = request.GET.get("date_from")
-    date_to = request.GET.get("date_to")
+@user_passes_test(is_admin)
+def block_user(request, user_id):
+    user = get_object_or_404(User, id=user_id, role='customer')  # Добавляем проверку роли
+    if request.method == 'POST':
+        user.is_active = not user.is_active
+        user.save()
+        msg = "Пользователь заблокирован" if not user.is_active else "Пользователь разблокирован"
+        messages.success(request, msg)
+    return redirect('dashboard:admin_users')
 
-    queryset = RepairRequest.objects.all()
-    if date_from:
-        queryset = queryset.filter(created_at__gte=parse_date(date_from))
-    if date_to:
-        queryset = queryset.filter(created_at__lte=parse_date(date_to) + datetime.timedelta(days=1))
+@user_passes_test(is_admin)
+def delete_user(request, user_id):
+    user = get_object_or_404(User, id=user_id, role='customer')  # Добавляем проверку роли
+    if request.method == 'POST':
+        user.delete()
+        messages.success(request, "Пользователь удалён")
+    return redirect('dashboard:admin_users')
 
-    response = HttpResponse(content_type='application/ms-excel')
-    response['Content-Disposition'] = 'attachment; filename="repair_requests.xls"'
+@user_passes_test(is_admin)
+def change_user_role(request, user_id):
+    user = get_object_or_404(User, id=user_id)
 
-    wb = xlwt.Workbook(encoding='utf-8')
-    ws = wb.add_sheet('Заявки')
+    if request.method == 'POST':
+        new_role = request.POST.get('new_role')
+        if new_role in ['customer', 'service', 'manager']:
+            user.role = new_role
+            user.save()
 
-    row_num = 0
-    columns = ['ID', 'Пользователь', 'Автомобиль', 'Описание', 'Статус', 'Дата создания']
-    for col_num, column in enumerate(columns):
-        ws.write(row_num, col_num, column)
+            if new_role == 'service':
+                AutoService.objects.get_or_create(user=user, defaults={'name': f"Сервис {user.username}"})
 
-    for req in queryset:
-        row_num += 1
-        ws.write(row_num, 0, req.id)
-        ws.write(row_num, 1, str(req.user))
-        ws.write(row_num, 2, str(req.car))
-        ws.write(row_num, 3, req.description)
-        ws.write(row_num, 4, req.get_status_display())
-        ws.write(row_num, 5, req.created_at.strftime("%Y-%m-%d %H:%M"))
+            messages.success(request, f"Роль пользователя изменена на {new_role}")
 
-    wb.save(response)
-    return response
+    return redirect('dashboard:admin_users')
+
+@user_passes_test(is_admin)
+def service_list(request):
+    search_query = request.GET.get('search', '')
+
+    services = AutoService.objects.select_related('user').all()
+
+    if search_query:
+        services = services.filter(name__icontains=search_query)
+
+    return render(request, 'dashboard/services.html', {
+        'services': services,
+        'search_query': search_query
+    })
+
+@user_passes_test(is_admin)
+def block_service(request, service_id):
+    service = get_object_or_404(AutoService, id=service_id)
+    if request.method == 'POST':
+        service.user.is_active = not service.user.is_active
+        service.user.save()
+        msg = "Сервис заблокирован" if not service.user.is_active else "Сервис разблокирован"
+        messages.success(request, msg)
+    return redirect('dashboard:admin_services')
+
+@user_passes_test(is_admin)
+def delete_service(request, service_id):
+    service = get_object_or_404(AutoService, id=service_id)
+    if request.method == 'POST':
+        service.user.delete()  # Удаляем связанного пользователя
+        messages.success(request, "Сервис удалён")
+    return redirect('dashboard:admin_services')
+
+@user_passes_test(is_admin)
+def request_list(request):
+    requests = RepairRequest.objects.select_related('executor', 'user', 'car').all()
+    executors = {r.executor for r in requests if r.executor}
+    return render(request, 'dashboard/requests.html', {
+        'requests': requests,
+        'executors': executors
+    })
+
+@user_passes_test(is_admin)
+def change_request_status(request, request_id):
+    req = get_object_or_404(RepairRequest, id=request_id)
+    if request.method == 'POST':
+        new_status = request.POST.get('new_status')
+        if new_status in dict(RepairRequest.STATUS_CHOICES):
+            req.status = new_status
+            req.save()
+            messages.success(request, f'Статус заявки #{req.id} изменен на {req.get_status_display()}')
+    return redirect('dashboard:admin_requests')
+
+@user_passes_test(is_admin)
+def delete_request(request, request_id):
+    req = get_object_or_404(RepairRequest, id=request_id)
+    if request.method == 'POST':
+        req.delete()
+        messages.success(request, f'Заявка #{request_id} удалена')
+    return redirect('dashboard:admin_requests')

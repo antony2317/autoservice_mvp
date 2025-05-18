@@ -29,6 +29,21 @@ class MasterForm(forms.ModelForm):
         model = Master
         fields = ['name', 'specialization', 'experience']
 
+
+class ServiceDescriptionForm(forms.ModelForm):
+    class Meta:
+        model = AutoService
+        fields = ['description']  # Убедитесь, что поле description существует в модели
+        widgets = {
+            'description': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 5,
+                'placeholder': 'Опишите ваш сервис...'
+            }),
+        }
+        labels = {
+            'description': 'Описание сервиса'
+        }
 #
 # class BookingForm(forms.Form):
 #     service = forms.ModelChoiceField(queryset=Service.objects.none(), label="Услуга")

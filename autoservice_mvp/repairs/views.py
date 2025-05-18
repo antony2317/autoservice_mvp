@@ -16,6 +16,10 @@ from garage.models import ServiceRecord
 
 @login_required
 def service_dashboard(request):
+    # Проверяем, что пользователь - сервис (новый вариант)
+    if request.user.role != 'service':
+        return redirect('home')
+
     new_requests = RepairRequest.objects.exclude(
         responses__service=request.user
     ).filter(status='new').select_related('user', 'car')
@@ -25,7 +29,8 @@ def service_dashboard(request):
         is_accepted=True
     ).select_related('repair_request__user', 'repair_request__car')
 
-    if hasattr(request.user, 'is_client') and request.user.is_client:
+    # Для клиентов (если нужно оставить эту часть)
+    if request.user.role == 'customer':
         my_requests = RepairRequest.objects.filter(
             user=request.user
         ).prefetch_related('responses')
@@ -47,7 +52,7 @@ def respond_to_request(request, request_id):
     if request.method == 'POST':
         if not hasattr(request.user, 'is_service') or not request.user.is_service:
             messages.error(request, "Только сервисы могут отвечать на заявки")
-            return redirect('repairs:dashboard')
+            return redirect('repairs:service_dashboard')
 
         try:
             response = RepairResponse(
@@ -71,7 +76,7 @@ def respond_to_request(request, request_id):
 
 
             messages.success(request, "Ваше предложение успешно отправлено!")
-            return redirect('repairs:dashboard')
+            return redirect('repairs:service_dashboard')
 
         except ValidationError as e:
             messages.error(request, f"Ошибка валидации: {e}")
@@ -79,7 +84,6 @@ def respond_to_request(request, request_id):
             messages.error(request, f"Произошла ошибка: {str(e)}")
 
     return redirect('repairs:service_dashboard')
-
 
 
 @login_required
