@@ -34,7 +34,7 @@
 ---
 
 - 🤝 Автор
-- Made with ❤️ by [antony2317]
+- Made with ❤️ by antony2317
 - Telegram: @hopkins_an
 
 
