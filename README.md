@@ -28,7 +28,7 @@
 - **Backend**: Django, Channels, Daphne
 - **WebSocket**: Django Channels + Redis
 - **Frontend**: HTML5, CSS
-- **База данных**: SQLite (по умолчанию), можно заменить на PostgreSQL
+- **База данных**: SQLite 
 - **Серверная очередь**: Redis
 
 ---
