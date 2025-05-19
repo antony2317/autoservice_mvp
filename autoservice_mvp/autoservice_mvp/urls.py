@@ -3,6 +3,11 @@
 from django.contrib import admin
 from django.urls import path, include
 
+from main import views as error_views
+
+handler404 = error_views.custom_404_view
+handler500 = error_views.custom_500_view
+
 
 
 urlpatterns = [

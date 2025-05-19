@@ -29,7 +29,6 @@ def service_dashboard(request):
         is_accepted=True
     ).select_related('repair_request__user', 'repair_request__car')
 
-    # Для клиентов (если нужно оставить эту часть)
     if request.user.role == 'customer':
         my_requests = RepairRequest.objects.filter(
             user=request.user

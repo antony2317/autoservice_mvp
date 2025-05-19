@@ -3,25 +3,22 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import sync_to_async
 from django.contrib.auth import get_user_model
 from chat.models import ChatMessage
-from repairs.models import RepairRequest  # Убедись, что путь к модели правильный
+from repairs.models import RepairRequest, RepairResponse
 
 User = get_user_model()
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.room_name = self.scope['url_route']['kwargs']['room_name']
-        self.room_group_name = f"chat_{self.room_name}"
+        self.request_id = self.scope['url_route']['kwargs']['request_id']
+        self.response_id = self.scope['url_route']['kwargs']['response_id']
+        self.room_group_name = f"chat_{self.request_id}_{self.response_id}"
         self.user = self.scope["user"]
-
-        print(f"[WebSocket] Попытка подключения от: {self.user} в комнату: {self.room_name}")
 
         await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
         )
-
         await self.accept()
-        print(f"[WebSocket] Подключение принято: {self.user}")
 
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(
@@ -35,7 +32,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         sender = self.user
 
         # Сохраняем сообщение в БД
-        await save_message(self.room_name, message, sender)
+        await save_message(self.request_id, self.response_id, message, sender)
 
         # Отправляем сообщение в группу
         await self.channel_layer.group_send(
@@ -55,26 +52,32 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 
 @sync_to_async
-def save_message(room_id, message, sender):
+def save_message(request_id, response_id, message, sender):
     try:
-        request = RepairRequest.objects.get(id=room_id)
-    except RepairRequest.DoesNotExist:
-        print(f"RepairRequest #{room_id} не найден.")
+        request = RepairRequest.objects.get(id=request_id)
+        response = RepairResponse.objects.get(id=response_id, repair_request=request)
+    except (RepairRequest.DoesNotExist, RepairResponse.DoesNotExist):
+        print(f"❌ Заявка или Отклик не найдены (request_id={request_id}, response_id={response_id})")
         return
 
-    # Автосервис — это любой пользователь, кроме владельца заявки
+    # Определяем получателя
     if sender == request.user:
-        receiver = User.objects.filter(is_staff=True).first()
+        receiver = response.service
     else:
         receiver = request.user
 
     if not receiver:
-        print("Не найден получатель для сообщения.")
+        print("❌ Не найден получатель.")
         return
 
-    ChatMessage.objects.create(
-        repair_request=request,
-        sender=sender,
-        receiver=receiver,
-        message=message
-    )
+    try:
+        ChatMessage.objects.create(
+            repair_request=request,
+            response=response,
+            sender=sender,
+            receiver=receiver,
+            message=message
+        )
+        print(f"✅ Сообщение сохранено: {sender} -> {receiver}")
+    except Exception as e:
+        print(f"❌ Ошибка при сохранении сообщения: {e}")

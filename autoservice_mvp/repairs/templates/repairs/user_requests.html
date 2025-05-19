@@ -43,8 +43,7 @@
                         </form>
 
                         <div class="chat-button-container mt-3">
-                            <a href="{% url 'chat:chat_between_users' request_id=response.repair_request.id %}"
-                               class="btn btn-primary">
+                            <a href="{% url 'chat:chat_with_response' request_id=repair_request.id response_id=response.id %}">
                                 💬 Перейти в чат
                             </a>
                         </div>

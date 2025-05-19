@@ -28,11 +28,14 @@
 
 <script>
     const requestId = "{{ repair_request.id }}";
+    const responseId = "{{ repair_response.id }}";
     const username = "{{ request.user.username }}";
     const chatMessages = document.getElementById('chat-messages');
 
     const roomId = "{{ repair_request.id }}";
-    const chatSocket = new WebSocket("ws://" + window.location.host + `/ws/chat/${roomId}/`);  // Используйте ws:// для локальных серверов без SSL
+   const chatSocket = new WebSocket(
+    "ws://" + window.location.host + `/ws/chat/${requestId}/response/${responseId}/`
+);
 
     chatSocket.onopen = function(e) {
         console.log("WebSocket is open now.");

@@ -4,7 +4,9 @@ from . import views
 app_name = 'chat'
 
 urlpatterns = [
-    path('chat/<int:request_id>/', views.chat_between_users, name='chat_between_users'),
-    path('chat/<int:request_id>/fetch/', views.fetch_messages, name='fetch_messages'),
-    path('chat/<int:request_id>/service/<int:response_id>/', views.chat_with_service, name='chat_with_service'),
+    # Основной чат между клиентом и сервисом по конкретному отклику
+    path('chat/<int:request_id>/response/<int:response_id>/', views.chat_with_response, name='chat_with_response'),
+
+    # Получение сообщений по этому отклику
+    path('chat/<int:request_id>/response/<int:response_id>/fetch/', views.fetch_messages, name='fetch_messages'),
 ]

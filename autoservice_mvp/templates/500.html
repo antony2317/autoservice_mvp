@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Ошибка сервера{% endblock %}
+
+{% block content %}
+<div class="error-page" style="text-align: center; padding: 60px;">
+  <h1 style="font-size: 72px; color: #dc3545;">500</h1>
+  <h2>Внутренняя ошибка сервера</h2>
+  <p>Что-то пошло не так. Мы уже работаем над этим.</p>
+  <a href="{% url 'home' %}" class="btn btn-primary" style="margin-top: 20px;">На главную</a>
+</div>
+{% endblock %}

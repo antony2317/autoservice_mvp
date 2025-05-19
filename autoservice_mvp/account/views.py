@@ -98,3 +98,6 @@ class UserLoginView(FormView):
         except Exception as e:
             messages.error(self.request, f'Ошибка входа: {str(e)}')
             return self.form_invalid(form)
+
+
+
