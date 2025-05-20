@@ -20,7 +20,8 @@
                     <small class="text-muted">Отклик отправлен: {{ response.created_at|date:"d.m.Y H:i" }}</small>
 
 
-                        <a href="{% url 'chat:chat_with_response' request_id=response.repair_request.id response_id=response.id %}">
+                        <a href="{% url 'chat:chat_with_response' request_id=response.repair_request.id response_id=response.id %}"
+                           class="chat-button">
                             💬 Перейти в чат
                         </a>
 

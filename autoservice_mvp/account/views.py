@@ -5,12 +5,13 @@ from django.urls import reverse_lazy, reverse
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from .forms import UserRegisterForm, ServiceRegisterForm, UserLoginForm
+from .mixins import AnonymousRequiredMixin
 from .models import AutoService
 
 User = get_user_model()
 
 
-class UserRegisterView(CreateView):
+class UserRegisterView(AnonymousRequiredMixin, CreateView):
     form_class = UserRegisterForm
     template_name = 'account/user_register.html'
     success_url = reverse_lazy('home')
@@ -32,7 +33,7 @@ class UserRegisterView(CreateView):
             return self.form_invalid(form)
 
 
-class ServiceRegisterView(CreateView):
+class ServiceRegisterView(AnonymousRequiredMixin, CreateView):
     form_class = ServiceRegisterForm
     template_name = 'account/service_register.html'
 
@@ -67,7 +68,7 @@ class ServiceRegisterView(CreateView):
             return self.form_invalid(form)
 
 
-class UserLoginView(FormView):
+class UserLoginView(AnonymousRequiredMixin, FormView):
     form_class = UserLoginForm
     template_name = 'account/login.html'
 

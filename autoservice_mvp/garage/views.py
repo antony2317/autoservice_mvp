@@ -7,6 +7,9 @@ from .forms import CarForm, ServiceRecordForm
 from django.http import JsonResponse
 from .constants import CAR_MODELS
 from repairs.models import RepairRequest
+from account.decorators import role_required
+from account.mixins import RoleRequiredMixin
+
 
 
 def garage_search(request):
@@ -16,7 +19,8 @@ def garage_search(request):
     return JsonResponse(data, safe=False)
 
 
-class GarageView(LoginRequiredMixin, ListView):
+class GarageView(LoginRequiredMixin, RoleRequiredMixin, ListView):
+    allowed_roles = ['customer']
     model = Car
     template_name = 'garage/list.html'
     context_object_name = 'cars'
@@ -39,7 +43,7 @@ class GarageView(LoginRequiredMixin, ListView):
 
 
 
-
+@role_required(['customer'])
 def add_car(request):
     if request.method == 'POST':
         form = CarForm(request.POST)
@@ -52,12 +56,15 @@ def add_car(request):
         form = CarForm()
     return render(request, 'garage/add_car.html', {'form': form})
 
+@role_required(['customer'])
 def get_models(request):
     brand = request.GET.get('brand')
     models = CAR_MODELS.get(brand, [])
     return JsonResponse(models, safe=False)
 
-class CarDetailView(DetailView):
+
+class CarDetailView(RoleRequiredMixin, DetailView):
+    allowed_roles = ['customer']
     model = Car
     template_name = 'garage/car_detail.html'
     context_object_name = 'car'
@@ -81,7 +88,8 @@ class CarDetailView(DetailView):
 
 
 
-class AddServiceRecordView(CreateView):
+class AddServiceRecordView(RoleRequiredMixin, CreateView):
+    allowed_roles = ['customer']
     model = ServiceRecord
     form_class = ServiceRecordForm
     template_name = 'garage/add_service_record.html'
@@ -102,7 +110,8 @@ class AddServiceRecordView(CreateView):
         return reverse('car_detail', kwargs={'pk': self.kwargs['pk']})
 
 
-class EditServiceRecordView(UpdateView):
+class EditServiceRecordView(RoleRequiredMixin, UpdateView):
+    allowed_roles = ['customer']
     model = ServiceRecord
     form_class = ServiceRecordForm
     template_name = 'garage/edit_service_record.html'
@@ -111,7 +120,8 @@ class EditServiceRecordView(UpdateView):
         return reverse('car_detail', kwargs={'pk': self.object.car.id})
 
 
-class DeleteServiceRecordView(DeleteView):
+class DeleteServiceRecordView(RoleRequiredMixin, DeleteView):
+    allowed_roles = ['customer']
     model = ServiceRecord
     template_name = 'garage/delete_service_record.html'
 
@@ -119,7 +129,8 @@ class DeleteServiceRecordView(DeleteView):
         return reverse('car_detail', kwargs={'pk': self.object.car.id})
 
 
-class GarageDashboardView(LoginRequiredMixin, TemplateView):
+class GarageDashboardView(LoginRequiredMixin, RoleRequiredMixin, TemplateView):
+    allowed_roles = ['customer']
     template_name = 'garage/dashboard.html'
 
     def get_context_data(self, **kwargs):

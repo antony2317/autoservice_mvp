@@ -8,12 +8,13 @@ from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.conf import settings
-from account.decorators import service_required
+from account.decorators import service_required, role_required
 from .tasks import notify_user_about_response
 from django.utils import timezone
 from garage.models import ServiceRecord
 
 
+@role_required(['service'])
 @login_required
 def service_dashboard(request):
     # Проверяем, что пользователь - сервис (новый вариант)
@@ -43,6 +44,7 @@ def service_dashboard(request):
     })
 
 
+@role_required(['service'])
 @require_POST
 @login_required
 def respond_to_request(request, request_id):
@@ -96,6 +98,7 @@ def accepted_responses_view(request):
     })
 
 
+@role_required(['service', 'admin', 'manager'])
 def change_request_status(request, request_id):
     repair_request = get_object_or_404(RepairRequest, id=request_id)
 
@@ -145,6 +148,7 @@ def change_request_status(request, request_id):
     return redirect('repairs:accepted_requests')
 
 
+@role_required(['customer'])
 @login_required
 def create_request(request):
     if request.method == 'POST':
@@ -160,6 +164,7 @@ def create_request(request):
     return render(request, 'repairs/create_request.html', {'form': form})
 
 
+@role_required(['service'])
 @login_required
 @service_required
 def service_accepted_requests(request):
@@ -174,7 +179,7 @@ def service_accepted_requests(request):
     })
 
 
-
+@role_required(['customer'])
 @login_required
 def confirm_response(request, response_id):
     response = get_object_or_404(RepairResponse, id=response_id, repair_request__user=request.user)
@@ -191,6 +196,7 @@ def confirm_response(request, response_id):
     return redirect('garage')
 
 
+@role_required(['service'])
 @login_required
 def user_requests(request):
     repair_requests = RepairRequest.objects.filter(user=request.user).prefetch_related('responses')
@@ -222,7 +228,7 @@ def accept_response(request, response_id):
 
     return redirect(request.META.get('HTTP_REFERER', '/'))
 
-
+@role_required(['service'])
 @login_required
 def my_requests(request):
     repair_requests = RepairRequest.objects.filter(user=request.user).order_by('-created_at').prefetch_related('responses')

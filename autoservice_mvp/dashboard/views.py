@@ -6,10 +6,13 @@ from repairs.models import RepairRequest
 from django.contrib.auth import get_user_model
 from django.db.models import Case, When, Value, IntegerField
 
+from account.decorators import role_required
+
+
 def is_admin(user):
     return user.is_superuser or user.is_staff
 
-
+@role_required(['admin', 'manager'])
 def dashboard(request):
     User = get_user_model()
     users_count = User.objects.filter(role='customer').exclude(is_superuser=True).count()
@@ -20,7 +23,7 @@ def dashboard(request):
         'requests_count': RepairRequest.objects.count(),
     }
     return render(request, 'dashboard/dashboard.html', context)
-
+@role_required(['admin', 'manager'])
 @user_passes_test(is_admin)
 def user_list(request):
     users = User.objects.filter(role__in=['manager', 'customer']).exclude(is_superuser=True).annotate(
@@ -33,6 +36,7 @@ def user_list(request):
 
     return render(request, 'dashboard/users.html', {'users': users})
 
+@role_required(['admin', 'manager'])
 @user_passes_test(is_admin)
 def block_user(request, user_id):
     user = get_object_or_404(User, id=user_id, role='customer')  # Добавляем проверку роли
@@ -43,6 +47,7 @@ def block_user(request, user_id):
         messages.success(request, msg)
     return redirect('dashboard:admin_users')
 
+@role_required(['admin', 'manager'])
 @user_passes_test(is_admin)
 def delete_user(request, user_id):
     user = get_object_or_404(User, id=user_id, role='customer')  # Добавляем проверку роли
@@ -51,6 +56,7 @@ def delete_user(request, user_id):
         messages.success(request, "Пользователь удалён")
     return redirect('dashboard:admin_users')
 
+@role_required(['admin', 'manager'])
 @user_passes_test(is_admin)
 def change_user_role(request, user_id):
     user = get_object_or_404(User, id=user_id)
@@ -68,6 +74,7 @@ def change_user_role(request, user_id):
 
     return redirect('dashboard:admin_users')
 
+@role_required(['admin', 'manager'])
 @user_passes_test(is_admin)
 def service_list(request):
     search_query = request.GET.get('search', '')
@@ -82,6 +89,7 @@ def service_list(request):
         'search_query': search_query
     })
 
+@role_required(['admin', 'manager'])
 @user_passes_test(is_admin)
 def block_service(request, service_id):
     service = get_object_or_404(AutoService, id=service_id)
@@ -92,6 +100,7 @@ def block_service(request, service_id):
         messages.success(request, msg)
     return redirect('dashboard:admin_services')
 
+@role_required(['admin', 'manager'])
 @user_passes_test(is_admin)
 def delete_service(request, service_id):
     service = get_object_or_404(AutoService, id=service_id)
@@ -100,6 +109,7 @@ def delete_service(request, service_id):
         messages.success(request, "Сервис удалён")
     return redirect('dashboard:admin_services')
 
+@role_required(['admin', 'manager'])
 @user_passes_test(is_admin)
 def request_list(request):
     requests = RepairRequest.objects.select_related('executor', 'user', 'car').all()
@@ -109,6 +119,7 @@ def request_list(request):
         'executors': executors
     })
 
+@role_required(['admin', 'manager'])
 @user_passes_test(is_admin)
 def change_request_status(request, request_id):
     req = get_object_or_404(RepairRequest, id=request_id)
@@ -120,6 +131,7 @@ def change_request_status(request, request_id):
             messages.success(request, f'Статус заявки #{req.id} изменен на {req.get_status_display()}')
     return redirect('dashboard:admin_requests')
 
+@role_required(['admin', 'manager'])
 @user_passes_test(is_admin)
 def delete_request(request, request_id):
     req = get_object_or_404(RepairRequest, id=request_id)

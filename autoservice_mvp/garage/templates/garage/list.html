@@ -68,7 +68,8 @@
                             {% endif %}
 
                             {% if request.responses.exists %}
-                                <a href="{% url 'chat:chat_with_response' request_id=request.id response_id=resp.id %}">
+                                <a href="{% url 'chat:chat_with_response' request_id=request.id response_id=resp.id %}"
+                                   class="chat-button">
                                     💬 Перейти в чат с автосервисом
                                 </a>
                             {% endif %}

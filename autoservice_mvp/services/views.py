@@ -13,7 +13,10 @@ from django.db.models.functions import Cast
 
 from reviews.forms import ReviewForm
 
+from account.decorators import role_required
 
+
+@role_required(['service'])
 @login_required
 def service_profile(request):
     if not request.user.is_service:
@@ -34,6 +37,7 @@ def service_profile(request):
 
 
 
+@role_required(['service'])
 def my_responses(request):
     all_responses = RepairResponse.objects.filter(
         service=request.user,
@@ -46,6 +50,7 @@ def my_responses(request):
     return render(request, 'services/my_responses.html', {'responses': responses})
 
 
+@role_required(['service', 'customer'])
 def service_detail(request, pk):
     service = get_object_or_404(AutoService, pk=pk)
     services = service.services.all()
@@ -121,7 +126,7 @@ def service_detail(request, pk):
     return render(request, 'services/index.html', context)
 
 
-
+@role_required(['service'])
 @login_required
 def add_service(request):
     autoservice = get_object_or_404(AutoService, user=request.user)
@@ -139,6 +144,7 @@ def add_service(request):
     return render(request, 'services/edit_service.html', {'form': form})
 
 
+@role_required(['service'])
 @login_required
 def my_services(request):
     autoservice = get_object_or_404(AutoService, user=request.user)
@@ -146,6 +152,7 @@ def my_services(request):
     return render(request, 'services/my_services.html', {'services': services})
 
 
+@role_required(['service'])
 def edit_service(request, pk):
     service = get_object_or_404(Service, pk=pk)
 
@@ -159,6 +166,8 @@ def edit_service(request, pk):
 
     return render(request, 'services/edit_service.html', {'form': form, 'service': service})
 
+
+@role_required(['service'])
 def delete_service(request, pk):
     service = get_object_or_404(Service, pk=pk)
 
@@ -171,6 +180,7 @@ def delete_service(request, pk):
         return redirect('services:service_detail', pk=service.autoservice.pk)
 
 
+@role_required(['service'])
 def masters_list(request):
     service = get_object_or_404(AutoService, user=request.user)
     masters = service.masters.all()

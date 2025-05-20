@@ -73,7 +73,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [('127.0.0.1', 6379)],  # Убедитесь, что используете правильный формат
+            "hosts": [('127.0.0.1', 6379)],
         },
     },
 }
@@ -106,8 +106,8 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    # 'account.middleware.RoleAccessMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    # 'account.middleware.RoleAccessMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
 ]
@@ -185,6 +185,7 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
     os.path.join(BASE_DIR, 'garage', 'static'),
 ]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

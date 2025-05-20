@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.http import JsonResponse
 from repairs.models import RepairRequest, RepairResponse
 from .models import ChatMessage
+from account.mixins import RoleRequiredMixin
 
 
 @login_required
