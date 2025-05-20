@@ -17,7 +17,6 @@ from garage.models import ServiceRecord
 @role_required(['service'])
 @login_required
 def service_dashboard(request):
-    # Проверяем, что пользователь - сервис (новый вариант)
     if request.user.role != 'service':
         return redirect('home')
 
@@ -102,7 +101,6 @@ def accepted_responses_view(request):
 def change_request_status(request, request_id):
     repair_request = get_object_or_404(RepairRequest, id=request_id)
 
-    # Только автосервис может менять статус
     if not request.user.is_authenticated or not hasattr(request.user, 'autoservice'):
         messages.error(request, "Только авторизованный автосервис может менять статус.")
         return redirect('repairs:accepted_responses')
@@ -115,17 +113,16 @@ def change_request_status(request, request_id):
         repair_request.status = new_status
         repair_request.save()
 
-        # Отправить email, если статус стал "Завершена"
         if new_status == 'completed' and previous_status != 'completed':
-            # Создаем запись в истории обслуживания
+
             ServiceRecord.objects.create(
                 car=repair_request.car,
                 autoservice=getattr(request.user, 'autoservice', None),
                 date=timezone.now().date(),
-                mileage=repair_request.car.mileage,  # или пробег, если есть в заявке
+                mileage=repair_request.car.mileage,
                 service_type=getattr(repair_request, 'service_type', 'Ремонт'),
                 description=getattr(repair_request, 'description', ''),
-                cost=None,  # Можно расширить форму, чтобы получать стоимость при закрытии
+                cost=None,
                 created_by=request.user
             )
 
@@ -172,7 +169,7 @@ def service_accepted_requests(request):
         service=request.user,
         is_accepted=True
     ).select_related('repair_request__car', 'repair_request__user') \
-     .order_by('-repair_request__created_at')  # Сортировка по дате создания заявки (новые — первыми)
+     .order_by('-repair_request__created_at')
 
     return render(request, 'repairs/service_accepted_requests.html', {
         'responses': accepted_responses

@@ -73,12 +73,12 @@ class CarDetailView(RoleRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context['service_history'] = ServiceRecord.objects.filter(car=self.object).order_by('-date')
 
-        # Получаем последнюю заявку
+
         last_request = RepairRequest.objects.filter(car=self.object).order_by('-created_at').first()
 
         repair_cost = None
         if last_request:
-            # Ищем принятый ответ для этой заявки
+
             accepted_response = last_request.responses.filter(is_accepted=True).first()
             if accepted_response:
                 repair_cost = accepted_response.proposed_price

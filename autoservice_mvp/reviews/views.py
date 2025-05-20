@@ -14,7 +14,7 @@ class CreateReviewView(LoginRequiredMixin, CreateView):
     model = Review
     form_class = ReviewForm
     template_name = 'reviews/create_review.html'
-    # Убираем success_url, чтобы переопределить get_success_url
+
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()

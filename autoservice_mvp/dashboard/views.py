@@ -39,7 +39,7 @@ def user_list(request):
 @role_required(['admin', 'manager'])
 @user_passes_test(is_admin)
 def block_user(request, user_id):
-    user = get_object_or_404(User, id=user_id, role='customer')  # Добавляем проверку роли
+    user = get_object_or_404(User, id=user_id, role='customer')
     if request.method == 'POST':
         user.is_active = not user.is_active
         user.save()
@@ -50,7 +50,7 @@ def block_user(request, user_id):
 @role_required(['admin', 'manager'])
 @user_passes_test(is_admin)
 def delete_user(request, user_id):
-    user = get_object_or_404(User, id=user_id, role='customer')  # Добавляем проверку роли
+    user = get_object_or_404(User, id=user_id, role='customer')
     if request.method == 'POST':
         user.delete()
         messages.success(request, "Пользователь удалён")
@@ -105,7 +105,7 @@ def block_service(request, service_id):
 def delete_service(request, service_id):
     service = get_object_or_404(AutoService, id=service_id)
     if request.method == 'POST':
-        service.user.delete()  # Удаляем связанного пользователя
+        service.user.delete()
         messages.success(request, "Сервис удалён")
     return redirect('dashboard:admin_services')
 

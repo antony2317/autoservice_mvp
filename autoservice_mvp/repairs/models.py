@@ -33,7 +33,7 @@ class RepairRequest(models.Model):
     )
 
     executor = models.ForeignKey(
-        AutoService,  # Ссылаемся на модель автосервиса
+        AutoService,
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
@@ -65,14 +65,14 @@ class RepairResponse(models.Model):
     service = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        limit_choices_to={'role': 'service'},  # Изменено с is_service на role
+        limit_choices_to={'role': 'service'},
         verbose_name='Автосервис'
     )
     proposed_price = models.DecimalField(
         max_digits=10,
         decimal_places=2,
         verbose_name='Цена',
-        validators=[MinValueValidator(0.01)]  # Добавлен валидатор
+        validators=[MinValueValidator(0.01)]
     )
     proposed_date = models.DateField(verbose_name='Предложенная дата ремонта')
     is_accepted = models.BooleanField(default=False, verbose_name='Подтверждено пользователем')
@@ -98,6 +98,5 @@ class RepairResponse(models.Model):
         if self.proposed_price <= 0:
             raise ValidationError("Цена должна быть положительной")
 
-        # Проверка что пользователь действительно сервис
         if self.service.role != 'service':
             raise ValidationError("Откликать могут только автосервисы")

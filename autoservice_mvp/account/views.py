@@ -18,12 +18,10 @@ class UserRegisterView(AnonymousRequiredMixin, CreateView):
 
     def form_valid(self, form):
         try:
-            # Сохраняем пользователя с ролью клиента
             user = form.save(commit=False)
-            user.role = 'customer'  # Явно указываем роль
+            user.role = 'customer'
             user.save()
 
-            # Автоматический вход после регистрации
             login(self.request, user)
             messages.success(self.request, 'Регистрация прошла успешно! Добро пожаловать!')
             return super().form_valid(form)
@@ -39,12 +37,10 @@ class ServiceRegisterView(AnonymousRequiredMixin, CreateView):
 
     def form_valid(self, form):
         try:
-            # Создаем пользователя с ролью сервиса
             user = form.save(commit=False)
             user.role = 'service'
             user.save()
 
-            # Создаем связанный автосервис
             service = AutoService.objects.create(
                 user=user,
                 name=form.cleaned_data['name'],
@@ -53,15 +49,12 @@ class ServiceRegisterView(AnonymousRequiredMixin, CreateView):
                 description=form.cleaned_data.get('description', '')
             )
 
-            # Автоматический вход
             login(self.request, user)
             messages.success(self.request, 'Регистрация сервиса прошла успешно!')
 
-            # Редирект на страницу сервиса
             return redirect('services:service_detail', pk=service.pk)
 
         except Exception as e:
-            # Откатываем изменения при ошибке
             if user.pk:
                 user.delete()
             messages.error(self.request, f'Ошибка при регистрации сервиса: {str(e)}')
@@ -77,7 +70,6 @@ class UserLoginView(AnonymousRequiredMixin, FormView):
             user = form.get_user()
             login(self.request, user)
 
-            # Редирект в зависимости от роли
             if user.is_superuser:
                 return redirect('dashboard:dashboard')
 
@@ -92,7 +84,6 @@ class UserLoginView(AnonymousRequiredMixin, FormView):
                     messages.warning(self.request, 'Профиль сервиса не найден')
                     return redirect('services:create_service')
 
-            # Для обычных пользователей
             messages.success(self.request, f'Добро пожаловать, {user.username}!')
             return redirect('home')
 

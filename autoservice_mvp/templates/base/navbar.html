@@ -11,59 +11,40 @@
         <a href="{% url 'home' %}" class="logo">DriveDoc</a>
     {% endif %}
 
+    <div class="hamburger">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+    </div>
+
     <ul class="nav-menu">
         {% if user.is_authenticated %}
             {% if user.is_service %}
-                <li>
-                    <a href="{% url 'repairs:service_dashboard' %}"
-                       class="nav-link {% if 'dashboard' in request.path %}active{% endif %}">
-                       Новые заявки
-                    </a>
-                </li>
-                <li>
-                    <a href="{% url 'repairs:accepted_requests' %}"
-                       class="nav-link {% if 'accepted' in request.path %}active{% endif %}">
-                       Принятые заявки
-                    </a>
-                </li>
-                <li>
-                    <a href="{% url 'services:service_profile' %}"
-                       class="nav-link {% if 'profile' in request.path %}active{% endif %}">
-                       Личный кабинет
-                    </a>
-                </li>
-                <li>
-                    <a href="{% url 'services:my_responses' %}"
-                       class="nav-link {% if 'responses' in request.path %}active{% endif %}">
-                       Мои отклики
-                    </a>
-                </li>
+                <li><a href="{% url 'repairs:service_dashboard' %}" class="nav-link {% if 'dashboard' in request.path %}active{% endif %}">Новые заявки</a></li>
+                <li><a href="{% url 'repairs:accepted_requests' %}" class="nav-link {% if 'accepted' in request.path %}active{% endif %}">Принятые заявки</a></li>
+                <li><a href="{% url 'services:service_profile' %}" class="nav-link {% if 'profile' in request.path %}active{% endif %}">Личный кабинет</a></li>
+                <li><a href="{% url 'services:my_responses' %}" class="nav-link {% if 'responses' in request.path %}active{% endif %}">Мои отклики</a></li>
             {% else %}
-                <li>
-                    <a href="{% url 'home' %}"
-                       class="nav-link {% if request.path == '/' %}active{% endif %}">
-                       Главная
-                    </a>
-                </li>
+                <li><a href="{% url 'home' %}" class="nav-link {% if request.path == '/' %}active{% endif %}">Главная</a></li>
                 {% if not user.is_superuser and not user.role == 'manager' %}
-                <li>
-                    <a href="{% url 'garage' %}"
-                       class="nav-link {% if '/garage/' in request.path %}active{% endif %}">
-                       Гараж
-                    </a>
-                </li>
+                    <li><a href="{% url 'garage' %}" class="nav-link {% if '/garage/' in request.path %}active{% endif %}">Гараж</a></li>
                 {% endif %}
             {% endif %}
+            <!-- Мобильная авторизация -->
+            <li class="mobile-auth">
+                <span class="username">Привет, {{ user.username }}!</span>
+                <a href="{% url 'account:logout' %}" class="btn btn-outline">Выйти</a>
+            </li>
         {% else %}
-            <li>
-                <a href="{% url 'home' %}"
-                   class="nav-link {% if request.path == '/' %}active{% endif %}">
-                   Главная
-                </a>
+            <li><a href="{% url 'home' %}" class="nav-link {% if request.path == '/' %}active{% endif %}">Главная</a></li>
+            <li class="mobile-auth">
+                <a href="{% url 'account:login' %}" class="btn btn-outline">Войти</a>
+                <a href="{% url 'account:user_register' %}" class="btn btn-primary">Регистрация</a>
             </li>
         {% endif %}
     </ul>
 
+    <!-- Авторизация для десктопа -->
     <div class="auth-buttons">
         {% if user.is_authenticated %}
             <span class="username">Привет, {{ user.username }}!</span>
@@ -73,10 +54,23 @@
             <a href="{% url 'account:user_register' %}" class="btn btn-primary">Регистрация</a>
         {% endif %}
     </div>
-
-    <div class="hamburger">
-        <span class="bar"></span>
-        <span class="bar"></span>
-        <span class="bar"></span>
-    </div>
 </nav>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const hamburger = document.querySelector(".hamburger");
+        const navMenu = document.querySelector(".nav-menu");
+
+        hamburger.addEventListener("click", () => {
+            hamburger.classList.toggle("active");
+            navMenu.classList.toggle("active");
+        });
+
+        // Автоматически закрывать меню при выборе ссылки (удобно на мобильных)
+        document.querySelectorAll(".nav-link").forEach(link => {
+            link.addEventListener("click", () => {
+                hamburger.classList.remove("active");
+                navMenu.classList.remove("active");
+            });
+        });
+    });
+</script>

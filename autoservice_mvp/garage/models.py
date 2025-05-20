@@ -152,7 +152,7 @@ def get_year_choices():
 class Car(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cars')
 
-    # Поле с выбором марки
+
     brand = models.CharField(
         max_length=50,
         choices=CAR_BRANDS,
@@ -195,7 +195,6 @@ class Car(models.Model):
         verbose_name_plural = 'Автомобили'
 
 
- # если еще не импортировано
 
 class ServiceRecord(models.Model):
     car = models.ForeignKey(Car, on_delete=models.CASCADE)

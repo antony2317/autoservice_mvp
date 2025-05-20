@@ -9,17 +9,13 @@ from django.utils.html import format_html
 
 User = get_user_model()
 
-# Настройки заголовков админки
+
 admin.site.site_header = "Панель администратора автосервиса"
 admin.site.site_title = "Администрирование автосервиса"
 admin.site.index_title = "Управление данными"
 
 
-# Класс для модели Garage
 
-
-
-# Класс для модели Car
 @admin.register(Car)
 class CarAdmin(ModelAdmin):
     list_display = ('full_name', 'user', 'year', 'mileage', 'vin_display')
@@ -57,7 +53,7 @@ class CarAdmin(ModelAdmin):
         verbose_name_plural = 'Автомобили'
 
 
-# Класс для модели ServiceRecord
+
 @admin.register(ServiceRecord)
 class ServiceRecordAdmin(ModelAdmin):
     list_display = ('car_info', 'autoservice', 'date', 'service_type', 'cost_display', 'has_receipt')
@@ -98,7 +94,7 @@ class ServiceRecordAdmin(ModelAdmin):
 
 
 
-# Класс для модели ServiceRequest
+
 @admin.register(ServiceRequest)
 class ServiceRequestAdmin(ModelAdmin):
     list_display = ('car_info', 'status', 'status_display', 'desired_date', 'short_description')
@@ -154,7 +150,7 @@ class ServiceRequestAdmin(ModelAdmin):
         verbose_name_plural = 'Заявки на ремонт'
 
 
-# Inline для ServiceRecord в Car
+
 class ServiceRecordInline(TabularInline):
     model = ServiceRecord
     extra = 0

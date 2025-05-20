@@ -168,6 +168,7 @@ body {
     box-shadow: 10px 0 30px rgba(0, 0, 0, 0.1);
     transition: var(--transition);
     z-index: 1000;
+
   }
 
   .nav-menu.active {
@@ -215,4 +216,46 @@ body {
   .nav-menu {
     background: #1a1a1a;
   }
+}
+.nav-menu.active {
+  left: 0;
+}
+
+.hamburger.active .bar:nth-child(1) {
+  transform: translateY(8px) rotate(45deg);
+}
+@media (max-width: 991px) {
+    .mobile-auth {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+        margin-top: 1.5rem;
+        width: 100%;
+        padding: 0 0.5rem; /* Добавляем небольшие отступы по бокам */
+    }
+
+    .mobile-auth .btn {
+        width: auto; /* Убираем 100% ширину */
+        padding: 0.6rem 1.2rem; /* Уменьшаем padding */
+        font-size: 0.95rem;
+        display: inline-block; /* Чтобы кнопки занимали только нужную ширину */
+        text-align: center;
+        align-self: flex-start; /* Выравниваем по левому краю */
+    }
+
+    .mobile-auth .username {
+        text-align: left;
+        margin-bottom: 0.5rem;
+        font-size: 1rem;
+        color: var(--dark);
+        font-weight: 600;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    @media (max-width: 991px) {
+        .mobile-auth .username {
+            color: #e0e0e0;
+        }
+    }
 }

@@ -171,9 +171,9 @@ def edit_service(request, pk):
 def delete_service(request, pk):
     service = get_object_or_404(Service, pk=pk)
 
-    # Проверяем, что текущий пользователь является владельцем автосервиса
+
     if service.autoservice.user != request.user:
-        return redirect('unauthorized')  # или 403, в зависимости от вашей логики
+        return redirect('unauthorized')
 
     if request.method == 'POST':
         service.delete()

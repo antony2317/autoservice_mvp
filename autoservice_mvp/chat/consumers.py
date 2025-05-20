@@ -31,10 +31,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message = data['message']
         sender = self.user
 
-        # Сохраняем сообщение в БД
+
         await save_message(self.request_id, self.response_id, message, sender)
 
-        # Отправляем сообщение в группу
+
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -60,7 +60,7 @@ def save_message(request_id, response_id, message, sender):
         print(f"❌ Заявка или Отклик не найдены (request_id={request_id}, response_id={response_id})")
         return
 
-    # Определяем получателя
+
     if sender == request.user:
         receiver = response.service
     else:

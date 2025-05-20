@@ -1,7 +1,5 @@
 
-from .models import ServiceRecord
-
-
+from .models import ServiceRecord, Garage
 
 from django import forms
 from .models import Car
@@ -30,7 +28,7 @@ class CarForm(forms.ModelForm):
 class ServiceRecordForm(forms.ModelForm):
     class Meta:
         model = ServiceRecord
-        exclude = ['autoservice', 'created_by']  # заменили 'garage' на 'autoservice' (или другое реальное поле)
+        exclude = ['autoservice', 'created_by']
         widgets = {
             'date': forms.DateInput(attrs={
                 'type': 'date',
@@ -68,7 +66,7 @@ class ServiceRecordForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Применить базовый стиль Bootstrap ко всем полям
+
         for field in self.fields.values():
             field.widget.attrs.setdefault('class', 'form-control')
 

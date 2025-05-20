@@ -33,7 +33,7 @@ class MasterForm(forms.ModelForm):
 class ServiceDescriptionForm(forms.ModelForm):
     class Meta:
         model = AutoService
-        fields = ['description']  # Убедитесь, что поле description существует в модели
+        fields = ['description']
         widgets = {
             'description': forms.Textarea(attrs={
                 'class': 'form-control',

@@ -12,7 +12,7 @@ def chat_with_response(request, request_id, response_id):
     repair_request = get_object_or_404(RepairRequest, id=request_id)
     repair_response = get_object_or_404(RepairResponse, id=response_id, repair_request=repair_request)
 
-    # Проверка доступа: либо клиент, либо сервис, ответивший на эту заявку
+
     if request.user != repair_request.user and request.user != repair_response.service:
         messages.error(request, "У вас нет доступа к этому чату.")
         return redirect('garage')
