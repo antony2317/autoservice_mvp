@@ -1,10 +1,10 @@
 from django.contrib.auth.decorators import login_required
 from django.forms import modelformset_factory
 from django.shortcuts import render, redirect, get_object_or_404
-from .forms import AutoServiceProfileForm, ServiceForm, MasterForm, ServiceDescriptionForm
+from .forms import AutoServiceProfileForm, ServiceForm, MasterForm, ServiceDescriptionForm, PhotoUploadForm
 from account.models import AutoService
 from repairs.models import RepairResponse, RepairRequest
-from .models import Service
+from .models import Service, AutoServicePhoto
 from reviews.models import Review
 from django.http import JsonResponse
 from datetime import datetime, timedelta, time
@@ -22,18 +22,30 @@ def service_profile(request):
     if not request.user.is_service:
         return redirect('home')
 
-
     auto_service = get_object_or_404(AutoService, user=request.user)
 
-    if request.method == 'POST':
-        form = AutoServiceProfileForm(request.POST, instance=auto_service)
-        if form.is_valid():
-            form.save()
-            return redirect('services:service_profile')
-    else:
-        form = AutoServiceProfileForm(instance=auto_service)
+    form = AutoServiceProfileForm(instance=auto_service)
+    photo_form = PhotoUploadForm()
 
-    return render(request, 'services/service_profile.html', {'form': form, 'auto_service': auto_service})
+    if request.method == 'POST':
+        if 'update_profile' in request.POST:
+            form = AutoServiceProfileForm(request.POST, instance=auto_service)
+            if form.is_valid():
+                form.save()
+                return redirect('services:service_profile')
+        elif 'upload_photo' in request.POST:
+            photo_form = PhotoUploadForm(request.POST, request.FILES)
+            if photo_form.is_valid():
+                photo = photo_form.save(commit=False)
+                photo.autoservice = auto_service
+                photo.save()
+                return redirect('services:service_profile')
+
+    return render(request, 'services/service_profile.html', {
+        'form': form,
+        'photo_form': photo_form,
+        'auto_service': auto_service
+    })
 
 
 
@@ -55,15 +67,14 @@ def service_detail(request, pk):
     service = get_object_or_404(AutoService, pk=pk)
     services = service.services.all()
     masters = service.masters.all()
+    photos = service.photos.all()  # Добавили получение фото
     is_user = request.user == service.user
-
 
     if request.user.is_authenticated:
         has_reviewed = Review.objects.filter(user=request.user, service=service.user).exists()
     else:
         has_reviewed = False
     can_leave_review = request.user.is_authenticated and request.user != service.user and not has_reviewed
-
 
     service_form = ServiceForm()
     master_form = MasterForm()
@@ -72,13 +83,11 @@ def service_detail(request, pk):
 
     if request.method == 'POST':
         if is_user:
-
             if 'update_description' in request.POST:
                 description_form = ServiceDescriptionForm(request.POST, instance=service)
                 if description_form.is_valid():
                     description_form.save()
                     return redirect('services:service_detail', pk=pk)
-
 
             elif 'add_service' in request.POST:
                 service_form = ServiceForm(request.POST)
@@ -88,7 +97,6 @@ def service_detail(request, pk):
                     new_service.save()
                     return redirect('services:service_detail', pk=pk)
 
-
             elif 'add_master' in request.POST:
                 master_form = MasterForm(request.POST)
                 if master_form.is_valid():
@@ -96,7 +104,6 @@ def service_detail(request, pk):
                     new_master.autoservice = service
                     new_master.save()
                     return redirect('services:service_detail', pk=pk)
-
 
         elif 'add_review' in request.POST and can_leave_review:
             review_form = ReviewForm(request.POST, user=request.user, service=service.user)
@@ -107,16 +114,16 @@ def service_detail(request, pk):
                 review.save()
                 return redirect('services:service_detail', pk=pk)
 
-
     reviews = Review.objects.filter(service=service.user).order_by('-created_at')
 
     context = {
         'service': service,
         'services': services,
         'masters': masters,
+        'photos': photos,  # <-- передаем фото в шаблон
         'service_form': service_form,
         'master_form': master_form,
-        'description_form': description_form,  # Добавляем форму описания в контекст
+        'description_form': description_form,
         'is_user': is_user,
         'reviews': reviews,
         'review_form': review_form,
@@ -124,6 +131,19 @@ def service_detail(request, pk):
         'has_reviewed': has_reviewed,
     }
     return render(request, 'services/index.html', context)
+
+
+@login_required
+def delete_photo(request, pk):
+    photo = get_object_or_404(AutoServicePhoto, pk=pk)
+
+    # Проверяем, что фото принадлежит сервису пользователя
+    if photo.autoservice.user == request.user:
+        if request.method == 'POST':
+            photo.image.delete(save=False)  # Удаляем файл с диска
+            photo.delete()
+
+    return redirect('services:service_profile')
 
 
 @role_required(['service'])

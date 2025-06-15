@@ -43,39 +43,22 @@
                 <p class="request-date">Создано: {{ request.created_at|date:"d.m.Y H:i" }}</p>
 
 
-                {% if request.responses.all %}
-                <div class="responses-block">
-                    <h4>Ответы автосервисов:</h4>
+                {% if request.responses.exists %}
+                <div class="responses-container">
+                    <div class="response-button-wrapper">
+                        <a href="{% url 'repairs:request_responses' request.id %}" class="responses-link">
+                            Отклики
+                            {% with new_count=request.get_new_responses_count %}
+                                {% if new_count > 0 %}
+                                <span class="new-responses-count">{{ new_count }}</span>
+                                {% endif %}
+                            {% endwith %}
+                        </a>
+                    </div>
 
-                    {% for resp in request.responses.all %}
-                        {% if resp.is_accepted or not request.has_accepted_response %}
-                        <div class="response {% if resp.is_accepted %}response-accepted{% endif %}">
-                            <p>
-                                <strong>Сервис:</strong>
-                                <a href="{% url 'services:service_detail' resp.service.autoservice.id %}" class="service-link">
-                                    {{ resp.service.username }}
-                                </a>
-                            </p>
-                            <p><strong>Цена:</strong> {{ resp.proposed_price }}₽</p>
-                            <p><strong>Дата ремонта:</strong> {{ resp.proposed_date|date:"d.m.Y" }}</p>
-                            {% if not resp.is_accepted and not request.has_accepted_response %}
-                                <form method="post" action="{% url 'repairs:accept_response' resp.id %}">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn-accept">Принять предложение</button>
-                                </form>
-                            {% elif resp.is_accepted %}
-                                <span class="accepted-badge">✅ Принято</span>
-                            {% endif %}
-
-                            {% if request.responses.exists %}
-                                <a href="{% url 'chat:chat_with_response' request_id=request.id response_id=resp.id %}"
-                                   class="chat-button">
-                                    💬 Перейти в чат с автосервисом
-                                </a>
-                            {% endif %}
-                        </div>
-                        {% endif %}
-                    {% endfor %}
+                    {% if request.has_accepted_response %}
+                        <span class="accepted-status">✓ Принято</span>
+                    {% endif %}
                 </div>
                 {% else %}
                     <p class="no-responses">Нет ответов от автосервисов</p>

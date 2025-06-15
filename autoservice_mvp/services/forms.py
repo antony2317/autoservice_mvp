@@ -1,6 +1,6 @@
 from django import forms
 from account.models import AutoService
-from .models import Service, Master
+from .models import Service, Master, AutoServicePhoto
 from django.forms import modelformset_factory
 from django.forms import DateTimeInput
 
@@ -44,6 +44,16 @@ class ServiceDescriptionForm(forms.ModelForm):
         labels = {
             'description': 'Описание сервиса'
         }
+
+
+class PhotoUploadForm(forms.ModelForm):
+    class Meta:
+        model = AutoServicePhoto
+        fields = ['image']
+        widgets = {
+            'image': forms.ClearableFileInput(attrs={'class': 'form-control-file'}),
+        }
+
 #
 # class BookingForm(forms.Form):
 #     service = forms.ModelChoiceField(queryset=Service.objects.none(), label="Услуга")

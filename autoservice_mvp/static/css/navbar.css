@@ -105,7 +105,227 @@ body {
   text-decoration: none;
   transition: var(--transition);
   font-size: 0.95rem;
-  border: none;
+  border: none;:root {
+  --primary: #4361ee;
+  --primary-dark: #3a0ca3;
+  --secondary: #f72585;
+  --light: #f8f9fa;
+  --dark: #212529;
+  --gray: #6c757d;
+  --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* Все стили навбара с высокой специфичностью */
+.navbar {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 1rem 2rem !important;
+  background: white !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1000 !important;
+}
+
+.navbar .logo {
+  font-size: 1.8rem !important;
+  font-weight: 800 !important;
+  color: var(--primary) !important;
+  text-decoration: none !important;
+  background: linear-gradient(to right, var(--primary), var(--primary-dark)) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  transition: var(--transition) !important;
+}
+
+.navbar .logo:hover {
+  transform: scale(1.02) !important;
+}
+
+.navbar .nav-menu {
+  display: flex !important;
+  gap: 2.5rem !important;
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.navbar .nav-link {
+  position: relative !important;
+  color: var(--dark) !important;
+  text-decoration: none !important;
+  font-weight: 600 !important;
+  font-size: 1.1rem !important;
+  padding: 0.5rem 0 !important;
+  transition: var(--transition) !important;
+  display: inline-block !important;
+}
+
+.navbar .nav-link:hover {
+  color: var(--primary) !important;
+  transform: translateY(-2px) !important;
+}
+
+.navbar .nav-link.active {
+  color: var(--primary-dark) !important;
+}
+
+.navbar .nav-link::after {
+  content: '' !important;
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  width: 0 !important;
+  height: 3px !important;
+  background: linear-gradient(to right, var(--primary), var(--secondary)) !important;
+  border-radius: 2px !important;
+  transition: var(--transition) !important;
+}
+
+.navbar .nav-link:hover::after,
+.navbar .nav-link.active::after {
+  width: 100% !important;
+}
+
+.navbar .auth-buttons {
+  display: flex !important;
+  align-items: center !important;
+  gap: 1.5rem !important;
+}
+
+.navbar .username {
+  font-weight: 600 !important;
+  color: var(--gray) !important;
+  font-size: 0.95rem !important;
+}
+
+.navbar .btn {
+  padding: 0.7rem 1.5rem !important;
+  border-radius: 50px !important;  /* важно для закругленных кнопок */
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  transition: var(--transition) !important;
+  font-size: 0.95rem !important;
+  border: none !important;
+  cursor: pointer !important;
+  box-shadow: none !important; /* убирает возможность перезаписи */
+}
+
+.navbar .btn-outline {
+  background: transparent !important;
+  color: var(--primary) !important;
+  border: 2px solid var(--primary) !important;
+  box-shadow: 0 2px 10px rgba(67, 97, 238, 0.2) !important;
+}
+
+.navbar .btn-outline:hover {
+  background: var(--primary) !important;
+  color: white !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3) !important;
+}
+
+.navbar .btn-primary {
+  background: linear-gradient(to right, var(--primary), var(--primary-dark)) !important;
+  color: white !important;
+  box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3) !important;
+}
+
+.navbar .btn-primary:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 25px rgba(67, 97, 238, 0.4) !important;
+}
+
+.navbar .hamburger {
+  display: none !important;
+  cursor: pointer !important;
+  z-index: 1001 !important;
+  padding: 0.5rem !important;
+}
+
+.navbar .bar {
+  display: block !important;
+  width: 28px !important;
+  height: 3px !important;
+  margin: 5px auto !important;
+  background: var(--primary) !important;
+  transition: var(--transition) !important;
+  border-radius: 2px !important;
+}
+
+@media (max-width: 992px) {
+  .navbar {
+    padding: 1rem !important;
+  }
+
+  .navbar .nav-menu {
+    position: fixed !important;
+    left: -100% !important;
+    top: 0 !important;
+    flex-direction: column !important;
+    background: white !important;
+    width: 70% !important;
+    height: 100vh !important;
+    padding: 6rem 2rem !important;
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.1) !important;
+    transition: var(--transition) !important;
+    z-index: 1000 !important;
+  }
+
+  .navbar .nav-menu.active {
+    left: 0 !important;
+  }
+
+  .navbar .nav-link {
+    font-size: 1.2rem !important;
+    padding: 1rem 0 !important;
+  }
+
+  .navbar .auth-buttons {
+    display: none !important;
+  }
+
+  .navbar .hamburger {
+    display: block !important;
+  }
+
+  .navbar .hamburger.active .bar:nth-child(1) {
+    transform: translateY(8px) rotate(45deg) !important;
+    background: var(--secondary) !important;
+  }
+
+  .navbar .hamburger.active .bar:nth-child(2) {
+    opacity: 0 !important;
+  }
+
+  .navbar .hamburger.active .bar:nth-child(3) {
+    transform: translateY(-8px) rotate(-45deg) !important;
+    background: var(--secondary) !important;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .navbar {
+    background: #1a1a1a !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+  }
+
+  .navbar .nav-link {
+    color: #e0e0e0 !important;
+  }
+
+  .navbar .nav-menu {
+    background: #1a1a1a !important;
+  }
+}
+
   cursor: pointer;
 }
 

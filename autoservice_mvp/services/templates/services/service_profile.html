@@ -3,6 +3,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'services/css/service_profile.css' %}">
+
 {% endblock %}
 
 {% block content %}
@@ -18,6 +19,7 @@
             <h3>Редактировать данные</h3>
             <form method="post">
                 {% csrf_token %}
+                {{ form.non_field_errors }}
                 <div class="form-group">
                     <label for="id_name">Название автосервиса</label>
                     {{ form.name }}
@@ -26,16 +28,35 @@
                     <label for="id_address">Адрес</label>
                     {{ form.address }}
                 </div>
-
                 <div class="form-group">
                     <label for="id_phone">Телефон</label>
                     {{ form.phone }}
                 </div>
-
-
-
-                <button type="submit" class="submit-btn">Сохранить изменения</button>
+                <button type="submit" name="update_profile" class="submit-btn">Сохранить изменения</button>
             </form>
+        </div>
+
+        <div class="photo-upload">
+            <h3>Фотографии автосервиса</h3>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ photo_form.image }}
+                <button type="submit" name="upload_photo" class="submit-btn">Загрузить фото</button>
+            </form>
+
+            {% if auto_service.photos.exists %}
+            <div class="gallery">
+                {% for photo in auto_service.photos.all %}
+                    <div class="photo-item">
+                        <img src="{{ photo.image.url }}" alt="Фото автосервиса">
+                        <form method="post" action="{% url 'services:delete_photo' photo.pk %}">
+                            {% csrf_token %}
+                            <button type="submit" title="Удалить фото">×</button>
+                        </form>
+                    </div>
+                {% endfor %}
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>

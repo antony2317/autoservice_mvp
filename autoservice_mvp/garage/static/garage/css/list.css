@@ -319,3 +319,42 @@
 .chat-button:active {
     transform: translateY(0);
 }
+
+/* Стили для блока откликов */
+.responses-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.responses-link {
+    position: relative;
+    display: inline-block;
+    padding: 6px 12px;
+    background: #1976D2;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.new-responses-count {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #D32F2F;
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.accepted-status {
+    color: #388E3C;
+    font-size: 13px;
+}

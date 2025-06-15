@@ -12,6 +12,7 @@ from account.decorators import service_required, role_required
 from .tasks import notify_user_about_response
 from django.utils import timezone
 from garage.models import ServiceRecord
+from django.db.models import Case, When, IntegerField
 
 
 @role_required(['service'])
@@ -206,24 +207,26 @@ def user_requests(request):
 def accept_response(request, response_id):
     response = get_object_or_404(RepairResponse, id=response_id)
 
-    if request.user == response.repair_request.user:
-        executor = getattr(response.service, 'autoservice', None)
-        if executor is None:
-            messages.error(request, 'Для сервиса не задан исполнитель (AutoService)')
-        else:
-            response.is_accepted = True
-            response.save()
+    if response.repair_request.user != request.user:
+        messages.error(request, "Вы не можете принять этот отклик")
+        return redirect('repairs:my_requests')
 
-            repair_request = response.repair_request
-            repair_request.status = 'in_progress'
-            repair_request.executor = executor
-            repair_request.save()
+    if response.repair_request.has_accepted_response:
+        messages.error(request, "У этой заявки уже есть принятый отклик")
+        return redirect('repairs:request_responses', request_id=response.repair_request.id)
 
-            messages.success(request, 'Предложение принято! Заявка в работе.')
-    else:
-        messages.error(request, 'Ошибка: у вас нет прав для этого действия')
+    # Принимаем отклик
+    response.is_accepted = True
+    response.save()
 
-    return redirect(request.META.get('HTTP_REFERER', '/'))
+    # Обновляем заявку
+    repair_request = response.repair_request
+    repair_request.status = 'in_progress'
+    repair_request.executor = response.service.autoservice
+    repair_request.save()
+
+    messages.success(request, "Вы успешно приняли предложение!")
+    return redirect('repairs:request_responses', request_id=repair_request.id)
 
 @role_required(['service'])
 @login_required
@@ -232,4 +235,41 @@ def my_requests(request):
     return render(request, 'chat/chat_room.html', {'repair_requests': repair_requests})
 
 
+@login_required
+def request_responses(request, request_id):
+    repair_request = get_object_or_404(
+        RepairRequest,
+        id=request_id,
+        user=request.user
+    )
 
+    # Помечаем все отклики как просмотренные
+    repair_request.mark_responses_as_viewed()
+
+    # Сортируем отклики: принятые — первыми, потом остальные, потом отклоненные
+    responses = repair_request.responses.all().order_by(
+        '-is_accepted',  # сначала принятый
+        'is_rejected',  # потом обычные
+        'created_at'  # по времени
+    )
+
+    return render(request, 'repairs/request_responses.html', {
+        'repair_request': repair_request,
+        'responses': responses,
+    })
+
+
+@require_POST
+@login_required
+def reject_response(request, response_id):
+    response = get_object_or_404(
+        RepairResponse,
+        id=response_id,
+        repair_request__user=request.user  # Проверяем, что пользователь - владелец заявки
+    )
+
+    response.is_rejected = True
+    response.save()
+
+    messages.success(request, "Предложение отклонено")
+    return redirect('repairs:request_responses', request_id=response.repair_request.id)

@@ -16,6 +16,16 @@ class Service(models.Model):
         return self.name
 
 
+
+class AutoServicePhoto(models.Model):
+    autoservice = models.ForeignKey('account.AutoService', on_delete=models.CASCADE, related_name='photos')
+    image = models.ImageField(upload_to='service_photos/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Photo for {self.autoservice.name}"
+
+
 class Master(models.Model):
     autoservice = models.ForeignKey(AutoService, related_name="masters", on_delete=models.CASCADE)
     name = models.CharField(max_length=100, verbose_name='Имя')

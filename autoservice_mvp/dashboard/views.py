@@ -36,7 +36,7 @@ def user_list(request):
 
     return render(request, 'dashboard/users.html', {'users': users})
 
-@role_required(['admin', 'manager'])
+
 @user_passes_test(is_admin)
 def block_user(request, user_id):
     user = get_object_or_404(User, id=user_id, role='customer')

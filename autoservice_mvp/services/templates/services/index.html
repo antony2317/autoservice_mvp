@@ -7,20 +7,32 @@
 
 {% block content %}
 <!-- Hero Section -->
-<section class="hero-section">
-    <div class="container">
-        <h1>{{ service.name }}</h1>
-        <p class="lead">Качественный ремонт и обслуживание автомобилей всех марок</p>
-
-        {% if not is_user %}
-            <button id="callBtn" class="btn btn-primary">Записаться</button>
-
-            <div id="phoneContainer" class="phone-container" style="display:none;">
-                <a href="tel:{{ service.phone|default:'+79991234567' }}" class="phone-link" style="color: white;">
-                    📞 {{ service.phone|default:"+7 (999) 123-45-67" }}
-                </a>
+<section class="hero-section slideshow-container">
+    <div class="slideshow">
+        {% for photo in photos %}
+            <div class="slide{% if forloop.first %} active{% endif %}">
+                <img src="{{ photo.image.url }}" alt="Фото автосервиса" style="width:100%">
             </div>
-        {% endif %}
+        {% empty %}
+            <div class="slide active">
+                <img src="{% static 'services/img/default_banner.jpg' %}" alt="Нет фото" style="width:100%">
+            </div>
+        {% endfor %}
+
+        <a class="prev">&#10094;</a>
+        <a class="next">&#10095;</a>
+    </div>
+
+    <div class="hero-overlay">
+        <div class="container text-center text-white">
+            <h1>{{ service.name }}</h1>
+            <p class="lead">Качественный ремонт и обслуживание автомобилей всех марок</p>
+        </div>
+    </div>
+    <div id="phoneContainer" class="phone-container" style="display:none;">
+        <a href="tel:{{ service.phone|default:'+79991234567' }}" class="phone-link" style="color: white;">
+            📞 {{ service.phone|default:"+7 (999) 123-45-67" }}
+        </a>
     </div>
 </section>
 
@@ -208,6 +220,59 @@
             });
         }
     });
+
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    let slideIndex = 0;
+    const slides = document.querySelectorAll('.slide');
+    const prevBtn = document.querySelector('.prev');
+    const nextBtn = document.querySelector('.next');
+    let timer;
+
+    function showSlide(index) {
+        slides.forEach((slide, i) => {
+            slide.classList.toggle('active', i === index);
+        });
+        slideIndex = index;
+    }
+
+    function nextSlide() {
+        let nextIndex = (slideIndex + 1) % slides.length;
+        showSlide(nextIndex);
+    }
+
+    function prevSlide() {
+        let prevIndex = (slideIndex - 1 + slides.length) % slides.length;
+        showSlide(prevIndex);
+    }
+
+    function startTimer() {
+        timer = setInterval(nextSlide, 5000); // 5 секунд
+    }
+
+    function resetTimer() {
+        clearInterval(timer);
+        startTimer();
+    }
+
+    // Обработчики кнопок
+    if (prevBtn && nextBtn) {
+        prevBtn.addEventListener('click', () => {
+            prevSlide();
+            resetTimer();
+        });
+
+        nextBtn.addEventListener('click', () => {
+            nextSlide();
+            resetTimer();
+        });
+    }
+
+    showSlide(slideIndex);
+    startTimer();
+});
+
 </script>
 
 <div id="map" style="width: 100%; height: 400px;"></div>
