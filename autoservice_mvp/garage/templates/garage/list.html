@@ -15,9 +15,15 @@
         {% for car in cars %}
         <li class="car-item">
             <a href="{% url 'car_detail' car.pk %}" class="car-link">
-                {{ car.brand }} {{ car.model }} ({{ car.year }})
+                {{ car.base_car.brand }} {{ car.base_car.model }} ({{ car.year }})
             </a>
             <span class="mileage-badge">{{ car.mileage }} км</span>
+
+            <a href="{% url 'car_delete' car.pk %}"
+               class="btn btn-danger btn-sm"
+               onclick="return confirm('Вы уверены, что хотите удалить этот автомобиль?');">
+               Удалить
+            </a>
         </li>
         {% endfor %}
     </ul>
@@ -38,10 +44,9 @@
                     <span class="request-id">Заявка #{{ request.id }}</span>
                     <span class="request-status">{{ request.get_status_display }}</span>
                 </div>
-                <p class="request-car">{{ request.car.brand }} {{ request.car.model }}</p>
+                <p class="request-car">{{ request.car.base_car.brand }} {{ request.car.base_car.model }} ({{ request.car.year }})</p>
                 <p class="request-desc">{{ request.description|truncatechars:100 }}</p>
                 <p class="request-date">Создано: {{ request.created_at|date:"d.m.Y H:i" }}</p>
-
 
                 {% if request.responses.exists %}
                 <div class="responses-container">

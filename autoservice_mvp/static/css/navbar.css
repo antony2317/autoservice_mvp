@@ -479,3 +479,16 @@ body {
         }
     }
 }
+
+@media (min-width: 992px) {
+    .mobile-auth {
+        display: none;
+    }
+}
+
+/* Скрываем десктопные кнопки на маленьких экранах */
+@media (max-width: 991px) {
+    .desktop-auth {
+        display: none;
+    }
+}

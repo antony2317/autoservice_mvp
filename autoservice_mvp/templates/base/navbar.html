@@ -25,20 +25,32 @@
                 <li><a href="{% url 'services:service_profile' %}" class="nav-link {% if 'profile' in request.path %}active{% endif %}">Личный кабинет</a></li>
                 <li><a href="{% url 'services:my_responses' %}" class="nav-link {% if 'responses' in request.path %}active{% endif %}">Мои отклики</a></li>
                 <li><a href="#" class="nav-link {% if 'responses' in request.path %}active{% endif %}">Чаты</a></li>
-
             {% else %}
                 <li><a href="{% url 'home' %}" class="nav-link {% if request.path == '/' %}active{% endif %}">Главная</a></li>
                 {% if not user.is_superuser and not user.role == 'manager' %}
                     <li><a href="{% url 'garage' %}" class="nav-link {% if '/garage/' in request.path %}active{% endif %}">Гараж</a></li>
                 {% endif %}
             {% endif %}
-            <!-- Мобильная авторизация -->
 
+            <!-- Кнопки для авторизованных пользователей в мобильном меню -->
+            <li class="mobile-auth">
+                {% if user.is_authenticated %}
+                    <span class="username-mobile">Привет, {{ user.username }}!</span>
+                    <div class="auth-buttons-mobile">
+                        <a href="{% url 'account:logout' %}" class="btn btn-outline">Выйти</a>
+                    </div>
+                {% else %}
+                    <div class="auth-buttons-mobile">
+                        <a href="{% url 'account:login' %}" class="btn btn-outline">Войти</a>
+                        <a href="{% url 'account:user_register' %}" class="btn btn-primary">Регистрация</a>
+                    </div>
+                {% endif %}
+            </li>
         {% endif %}
     </ul>
 
     <!-- Авторизация для десктопа -->
-    <div class="auth-buttons">
+    <div class="auth-buttons desktop-auth">
         {% if user.is_authenticated %}
             <span class="username">Привет, {{ user.username }}!</span>
             <a href="{% url 'account:logout' %}" class="btn btn-outline">Выйти</a>

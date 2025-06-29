@@ -12,18 +12,61 @@
     <form method="post" class="add-car-form">
         {% csrf_token %}
 
-        {% for field in form %}
         <div class="form-field">
-            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-            {{ field }}
-            {% if field.help_text %}
-                <span class="form-hint">{{ field.help_text }}</span>
-            {% endif %}
-            {% for error in field.errors %}
+            <label class="form-label" for="id_brand">Марка</label>
+            {{ form.brand }}
+            {% for error in form.brand.errors %}
                 <span class="form-error">{{ error }}</span>
             {% endfor %}
         </div>
-        {% endfor %}
+
+        <div class="form-field">
+            <label class="form-label" for="id_model">Модель</label>
+            {{ form.model }}
+            {% for error in form.model.errors %}
+                <span class="form-error">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <div class="form-field">
+            <label class="form-label" for="id_year">Год выпуска</label>
+            {{ form.year }}
+            {% for error in form.year.errors %}
+                <span class="form-error">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <div class="form-field">
+            <label class="form-label" for="id_engine_type">Тип двигателя</label>
+            {{ form.engine_type }}
+            {% for error in form.engine_type.errors %}
+                <span class="form-error">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <div class="form-field">
+            <label class="form-label" for="id_engine_volume">Объем двигателя (л)</label>
+            {{ form.engine_volume }}
+            {% for error in form.engine_volume.errors %}
+                <span class="form-error">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <div class="form-field">
+            <label class="form-label" for="id_vin">VIN-номер</label>
+            {{ form.vin }}
+            {% for error in form.vin.errors %}
+                <span class="form-error">{{ error }}</span>
+            {% endfor %}
+        </div>
+
+        <div class="form-field">
+            <label class="form-label" for="id_mileage">Пробег (км)</label>
+            {{ form.mileage }}
+            {% for error in form.mileage.errors %}
+                <span class="form-error">{{ error }}</span>
+            {% endfor %}
+        </div>
 
         <div class="form-actions">
             <button type="submit" class="form-submit-btn">Сохранить</button>
@@ -31,33 +74,120 @@
     </form>
 </div>
 
-<datalist id="model_list">
-</datalist>
-
-
 <script>
-function loadModels() {
-    const brand = document.getElementById('id_brand').value;
-    const modelInput = document.getElementById('id_model');
-    const datalist = document.getElementById('model_list');
+window.addEventListener('DOMContentLoaded', () => {
+    disableFields(['model', 'year', 'engine_type', 'engine_volume']);
+});
 
-    modelInput.disabled = true;
-    datalist.innerHTML = '';
+document.getElementById('id_brand').addEventListener('change', function () {
+    const brand = this.value;
+    const modelSelect = document.getElementById('id_model');
 
-    fetch(`/garage/ajax/get-models/?brand=${brand}`)
+    // Очистка и отключение зависимых полей
+    resetAndDisable(['model', 'year', 'engine_type', 'engine_volume']);
+
+    if (!brand) return;
+
+    fetch(`/garage/ajax/get-models/?brand=${encodeURIComponent(brand)}`)
         .then(response => response.json())
         .then(models => {
+            modelSelect.innerHTML = '<option value="">---------</option>';
             models.forEach(model => {
                 const option = document.createElement('option');
                 option.value = model;
-                datalist.appendChild(option);
+                option.textContent = model;
+                modelSelect.appendChild(option);
             });
-            modelInput.disabled = false;
-        })
-        .catch(error => {
-            console.error('Ошибка загрузки моделей:', error);
+            modelSelect.disabled = false;
         });
+});
+
+document.getElementById('id_model').addEventListener('change', function () {
+    const brand = document.getElementById('id_brand').value;
+    const model = this.value;
+
+    // Очистка и отключение зависимых полей
+    resetAndDisable(['year', 'engine_type', 'engine_volume']);
+
+    if (!model) return;
+
+    fetch(`/garage/ajax/get-years/?brand=${encodeURIComponent(brand)}&model=${encodeURIComponent(model)}`)
+        .then(response => response.json())
+        .then(data => {
+            const years = data.years || data;
+            const yearSelect = document.getElementById('id_year');
+            yearSelect.innerHTML = '<option value="">---------</option>';
+            years.forEach(year => {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                yearSelect.appendChild(option);
+            });
+            yearSelect.disabled = false;
+        });
+});
+
+document.getElementById('id_year').addEventListener('change', function () {
+    const brand = document.getElementById('id_brand').value;
+    const model = document.getElementById('id_model').value;
+    const year = this.value;
+
+    // Очистка и отключение зависимых полей
+    resetAndDisable(['engine_type', 'engine_volume']);
+
+    if (!(brand && model && year)) return;
+
+    fetch(`/garage/ajax/get-engine-types/?brand=${encodeURIComponent(brand)}&model=${encodeURIComponent(model)}&year=${encodeURIComponent(year)}`)
+        .then(response => response.json())
+        .then(engine_types => {
+            const engineTypeSelect = document.getElementById('id_engine_type');
+            engineTypeSelect.innerHTML = '<option value="">---------</option>';
+            engine_types.forEach(([value, label]) => {
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = label;
+                engineTypeSelect.appendChild(option);
+            });
+            engineTypeSelect.disabled = false;
+        });
+});
+
+document.getElementById('id_engine_type').addEventListener('change', function () {
+    const brand = document.getElementById('id_brand').value;
+    const model = document.getElementById('id_model').value;
+    const year = document.getElementById('id_year').value;
+    const engineType = this.value;
+
+    // Очистка и отключение dependent поля
+    resetAndDisable(['engine_volume']);
+
+    if (!(brand && model && year && engineType)) return;
+
+    fetch(`/garage/ajax/get-engine-volumes/?brand=${encodeURIComponent(brand)}&model=${encodeURIComponent(model)}&year=${encodeURIComponent(year)}&engine_type=${encodeURIComponent(engineType)}`)
+        .then(response => response.json())
+        .then(engine_volumes => {
+            const engineVolumeSelect = document.getElementById('id_engine_volume');
+            engineVolumeSelect.innerHTML = '<option value="">---------</option>';
+            engine_volumes.forEach(volume => {
+                const option = document.createElement('option');
+                option.value = volume;
+                option.textContent = volume;
+                engineVolumeSelect.appendChild(option);
+            });
+            engineVolumeSelect.disabled = false;
+        });
+});
+
+function resetAndDisable(fields) {
+    fields.forEach(id => {
+        const el = document.getElementById('id_' + id);
+        if (!el) return;
+
+        if (el.tagName === 'SELECT') {
+            el.innerHTML = '<option value="">---------</option>';
+        }
+        el.disabled = true;
+    });
 }
 </script>
-
 {% endblock %}

@@ -149,46 +149,46 @@ def get_year_choices():
     return [(year, year) for year in range(current_year, current_year - 30, -1)]
 
 
-class Car(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cars')
 
-
-    brand = models.CharField(
-        max_length=50,
-        choices=CAR_BRANDS,
-        verbose_name='Марка автомобиля'
+class CarBase(models.Model):
+    brand = models.CharField(max_length=50, verbose_name='Марка')
+    model = models.CharField(max_length=50, verbose_name='Модель')
+    year_from = models.PositiveIntegerField(verbose_name='Год начала выпуска')
+    year_to = models.PositiveIntegerField(verbose_name='Год окончания выпуска')
+    engine_type = models.CharField(
+        max_length=20,
+        choices=[
+            ('petrol', 'Бензин'),
+            ('diesel', 'Дизель'),
+            ('hybrid', 'Гибрид'),
+            ('electric', 'Электро'),
+        ],
+        verbose_name='Тип двигателя'
     )
-
-    model = models.CharField(
-        max_length=50,
-        verbose_name='Модель автомобиля'
-    )
-
-    year = models.PositiveIntegerField(
-        choices=get_year_choices(),
-        verbose_name='Год выпуска'
-    )
-
-    vin = models.CharField(
-        max_length=17,
-        unique=True,
-        blank=True,
-        null=True,
-        verbose_name='VIN-номер'
-    )
-
-    mileage = models.PositiveIntegerField(
-        default=0,
-        verbose_name='Пробег (км)'
-    )
-
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name='Дата добавления'
+    engine_volume = models.DecimalField(
+        max_digits=3, decimal_places=1, verbose_name='Объем двигателя (л)'
     )
 
     def __str__(self):
-        return f"{self.get_brand_display()} {self.model} ({self.year})"
+        return f"{self.brand} {self.model} ({self.year_from}–{self.year_to})"
+
+    class Meta:
+        verbose_name = 'Авто из базы'
+        verbose_name_plural = 'База автомобилей'
+        unique_together = ('brand', 'model', 'year_from', 'year_to', 'engine_type', 'engine_volume')
+
+
+
+class Car(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cars')
+    base_car = models.ForeignKey(CarBase, on_delete=models.PROTECT, null=True, blank=True, verbose_name='Автомобиль из базы')
+    year = models.PositiveIntegerField(verbose_name='Год выпуска', null=True, blank=True)
+    vin = models.CharField(max_length=17, unique=True, blank=True, null=True, verbose_name='VIN-номер')
+    mileage = models.PositiveIntegerField(default=0, verbose_name='Пробег (км)')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата добавления')
+
+    def __str__(self):
+        return f"{self.base_car.brand} {self.base_car.model} ({self.year or 'год не указан'})"
 
     class Meta:
         verbose_name = 'Автомобиль'
@@ -224,3 +224,6 @@ class ServiceRequest(models.Model):
         ('completed', 'Завершена'),
     ]
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+
+
+

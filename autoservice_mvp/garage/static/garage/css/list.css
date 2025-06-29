@@ -211,9 +211,24 @@
 }
 
 .btn-primary {
+    box-sizing: border-box;
     background: linear-gradient(to right, var(--primary), var(--primary-dark));
     color: white;
     box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+    /* Адаптивные стили */
+    padding: 12px 24px;  /* Увеличиваем отступы */
+    font-size: 16px;     /* Увеличиваем текст */
+    border-radius: 8px;  /* Скругление углов */
+    display: inline-block;
+    text-align: center;
+    min-width: 120px;    /* Минимальная ширина */
+    transition: all 0.3s ease;  /* Плавные анимации */
+    -webkit-tap-highlight-color: transparent;
+}
+
+.btn-primary:active {
+    transform: translateY(1px);  /* Эффект нажатия */
+    box-shadow: 0 2px 10px rgba(67, 97, 238, 0.4);
 }
 
 .btn-primary:hover {
@@ -357,4 +372,12 @@
 .accepted-status {
     color: #388E3C;
     font-size: 13px;
+}
+@media (max-width: 768px) {
+    .btn-primary {
+        padding: 14px 28px;  /* Еще больше для мобилок */
+        font-size: 18px;
+        width: 100%;         /* На всю ширину экрана */
+        margin: 8px 0;       /* Отступы сверху/снизу */
+    }
 }

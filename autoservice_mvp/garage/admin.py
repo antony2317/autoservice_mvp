@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth import get_user_model
 from unfold.admin import ModelAdmin, TabularInline
 
-from .models import Car, ServiceRecord, ServiceRequest
+from .models import Car, ServiceRecord, ServiceRequest, CarBase
 from .models import CAR_BRANDS
 
 from django.utils.html import format_html
@@ -16,17 +16,29 @@ admin.site.index_title = "Управление данными"
 
 
 
+
+@admin.register(CarBase)
+class CarBaseAdmin(admin.ModelAdmin):
+    list_display = ('brand', 'model', 'year_range', 'engine_type', 'engine_volume')
+    list_filter = ('brand', 'engine_type')
+    search_fields = ('brand', 'model')
+
+    def year_range(self, obj):
+        return f"{obj.year_from}–{obj.year_to}"
+    year_range.short_description = 'Годы выпуска'
+
+
 @admin.register(Car)
 class CarAdmin(ModelAdmin):
-    list_display = ('full_name', 'user', 'year', 'mileage', 'vin_display')
-    list_filter = ('brand', 'year', 'user')
-    search_fields = ('brand', 'model', 'vin', 'user__username')
+    list_display = ('full_name', 'user', 'get_year', 'mileage', 'vin_display')
+    list_filter = ('base_car__brand', 'base_car__year_from', 'base_car__year_to', 'user')
+    search_fields = ('base_car__brand', 'base_car__model', 'vin', 'user__username')
     raw_id_fields = ('user',)
     ordering = ('-created_at',)
 
     fieldsets = (
         ('Основные данные', {
-            'fields': ('user', 'brand', 'model', 'year', 'vin')
+            'fields': ('user', 'base_car', 'vin')
         }),
         ('Технические характеристики', {
             'fields': ('mileage',)
@@ -34,23 +46,16 @@ class CarAdmin(ModelAdmin):
     )
 
     def full_name(self, obj):
-        return f"{obj.get_brand_display()} {obj.model}"
-
+        return f"{obj.base_car.brand} {obj.base_car.model}"
     full_name.short_description = 'Автомобиль'
+
+    def get_year(self, obj):
+        return obj.year
+    get_year.short_description = 'Год выпуска'
 
     def vin_display(self, obj):
         return obj.vin if obj.vin else "-"
-
     vin_display.short_description = 'VIN-номер'
-
-    def formfield_for_choice_field(self, db_field, request, **kwargs):
-        if db_field.name == "brand":
-            kwargs['choices'] = CAR_BRANDS
-        return super().formfield_for_choice_field(db_field, request, **kwargs)
-
-    class Meta:
-        verbose_name = 'Автомобиль'
-        verbose_name_plural = 'Автомобили'
 
 
 
@@ -154,7 +159,7 @@ class ServiceRequestAdmin(ModelAdmin):
 class ServiceRecordInline(TabularInline):
     model = ServiceRecord
     extra = 0
-    fields = ('garage', 'date', 'service_type', 'cost')
+    fields = ('autoservice', 'date', 'service_type', 'cost')
     readonly_fields = ('date', 'service_type', 'cost')
     verbose_name = 'Запись о сервисе'
     verbose_name_plural = 'История обслуживания'

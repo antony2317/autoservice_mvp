@@ -1,8 +1,8 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import ListView, CreateView, DetailView, DeleteView, UpdateView, TemplateView
 from django.urls import reverse_lazy, reverse
-from .models import Car, ServiceRecord, Garage
+from .models import Car, ServiceRecord, Garage, CarBase
 from .forms import CarForm, ServiceRecordForm
 from django.http import JsonResponse
 from .constants import CAR_MODELS
@@ -59,9 +59,80 @@ def add_car(request):
 @role_required(['customer'])
 def get_models(request):
     brand = request.GET.get('brand')
-    models = CAR_MODELS.get(brand, [])
+    models = list(CarBase.objects.filter(brand=brand).values_list('model', flat=True).distinct())
     return JsonResponse(models, safe=False)
 
+
+def get_years(request):
+    brand = request.GET.get('brand')
+    model = request.GET.get('model')
+
+    entries = CarBase.objects.filter(brand=brand, model=model)
+    years = set()
+
+    for entry in entries:
+        years.update(range(entry.year_from, entry.year_to + 1))
+
+    return JsonResponse({'years': sorted(years)})
+def get_engine_types(request):
+    brand = request.GET.get('brand')
+    model = request.GET.get('model')
+    year = request.GET.get('year')
+
+    try:
+        year = int(year)
+    except (TypeError, ValueError):
+        return JsonResponse([], safe=False)
+
+    # Получаем словарь типа двигателя: ключ -> отображаемое имя
+    ENGINE_TYPE_CHOICES = dict(CarBase._meta.get_field('engine_type').choices)
+
+    engines = CarBase.objects.filter(
+        brand=brand,
+        model=model,
+        year_from__lte=year,
+        year_to__gte=year
+    ).values_list('engine_type', flat=True).distinct()
+
+    result = []
+    for engine_type in engines:
+        label = ENGINE_TYPE_CHOICES.get(engine_type, engine_type)
+        result.append([engine_type, label])
+
+    return JsonResponse(result, safe=False)
+
+
+def get_engine_volumes(request):
+    brand = request.GET.get('brand')
+    model = request.GET.get('model')
+    year = request.GET.get('year')
+    engine_type = request.GET.get('engine_type')
+
+    try:
+        year = int(year)
+    except (TypeError, ValueError):
+        return JsonResponse([], safe=False)
+
+    volumes = CarBase.objects.filter(
+        brand=brand,
+        model=model,
+        engine_type=engine_type,
+        year_from__lte=year,
+        year_to__gte=year
+    ).values_list('engine_volume', flat=True).distinct()
+
+    result = sorted(list(volumes))
+    return JsonResponse(result, safe=False)
+
+
+class CarDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Car
+    template_name = 'garage/car_confirm_delete.html'
+    success_url = reverse_lazy('garage')  # замените на имя вашего URL с автосами
+
+    def test_func(self):
+        car = self.get_object()
+        return car.user == self.request.user  # можно удалять только свои авто
 
 class CarDetailView(RoleRequiredMixin, DetailView):
     allowed_roles = ['customer']
