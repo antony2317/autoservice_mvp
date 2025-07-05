@@ -2,11 +2,16 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib import messages
 from account.models import User, AutoService
+from django.urls import reverse_lazy
+from django.views.generic import CreateView
 from repairs.models import RepairRequest
 from django.contrib.auth import get_user_model
 from django.db.models import Case, When, Value, IntegerField
 
+
 from account.decorators import role_required
+
+from .forms import CarBaseForm
 
 
 def is_admin(user):
@@ -139,3 +144,24 @@ def delete_request(request, request_id):
         req.delete()
         messages.success(request, f'Заявка #{request_id} удалена')
     return redirect('dashboard:admin_requests')
+
+
+
+
+
+
+
+def carbase_create_view(request):
+    if request.method == 'POST':
+        form = CarBaseForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Данные успешно сохранены!")
+            # НЕ очищаем форму, чтобы данные остались
+            # Можно обновить форму с данными из сохранённого объекта, если нужно
+        else:
+            messages.error(request, "Пожалуйста, исправьте ошибки в форме.")
+    else:
+        form = CarBaseForm()
+
+    return render(request, 'dashboard/add_car.html', {'form': form})

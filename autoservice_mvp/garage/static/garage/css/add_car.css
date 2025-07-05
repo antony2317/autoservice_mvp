@@ -99,3 +99,17 @@ datalist {
         font-size: 1.5rem;
     }
 }
+
+.engine-volume-wrapper {
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    max-height: 200px; /* Достаточно для одного поля */
+    opacity: 1;
+}
+
+.engine-volume-wrapper.hidden {
+    max-height: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+

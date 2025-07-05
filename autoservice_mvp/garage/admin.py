@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from unfold.admin import ModelAdmin, TabularInline
 
 from .models import Car, ServiceRecord, ServiceRequest, CarBase
-from .models import CAR_BRANDS
+
 
 from django.utils.html import format_html
 
@@ -18,14 +18,19 @@ admin.site.index_title = "Управление данными"
 
 
 @admin.register(CarBase)
+
 class CarBaseAdmin(admin.ModelAdmin):
-    list_display = ('brand', 'model', 'year_range', 'engine_type', 'engine_volume')
-    list_filter = ('brand', 'engine_type')
-    search_fields = ('brand', 'model')
+    list_display = ('brand', 'model', 'generation', 'year_range', 'engine_type', 'engine_volume')
+    list_filter = ('brand', 'engine_type', 'generation')  # если хочешь фильтровать по поколению
+    search_fields = ('brand', 'model', 'generation')
 
     def year_range(self, obj):
-        return f"{obj.year_from}–{obj.year_to}"
+        return f"{obj.year_from}–{obj.year_to if obj.year_to else 'н.в.'}"
     year_range.short_description = 'Годы выпуска'
+
+
+
+
 
 
 @admin.register(Car)
@@ -56,6 +61,8 @@ class CarAdmin(ModelAdmin):
     def vin_display(self, obj):
         return obj.vin if obj.vin else "-"
     vin_display.short_description = 'VIN-номер'
+
+
 
 
 
@@ -169,3 +176,6 @@ class ServiceRecordInline(TabularInline):
 
 
 CarAdmin.inlines = [ServiceRecordInline]
+
+
+

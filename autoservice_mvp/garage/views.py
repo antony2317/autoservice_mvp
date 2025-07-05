@@ -1,5 +1,8 @@
+from django.contrib import messages
+from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.decorators import method_decorator
 from django.views.generic import ListView, CreateView, DetailView, DeleteView, UpdateView, TemplateView
 from django.urls import reverse_lazy, reverse
 from .models import Car, ServiceRecord, Garage, CarBase
@@ -9,6 +12,8 @@ from .constants import CAR_MODELS
 from repairs.models import RepairRequest
 from account.decorators import role_required
 from account.mixins import RoleRequiredMixin
+from datetime import datetime
+from django.db.models import Q
 
 
 
@@ -43,37 +48,97 @@ class GarageView(LoginRequiredMixin, RoleRequiredMixin, ListView):
 
 
 
+
 @role_required(['customer'])
 def add_car(request):
     if request.method == 'POST':
         form = CarForm(request.POST)
         if form.is_valid():
-            car = form.save(commit=False)
-            car.user = request.user
-            car.save()
-            return redirect('garage')
+            try:
+                car = form.save(commit=False)
+                car.user = request.user  # ← обязательно, иначе не сохранится
+                car.base_car = form.cleaned_data.get('base_car')
+                car.year = int(form.cleaned_data.get('year'))
+
+                car.save()
+                messages.success(request, 'Автомобиль успешно добавлен.')
+                return redirect('garage')
+            except Exception as e:
+                print("Ошибка при сохранении:", e)
+                messages.error(request, f'Ошибка при сохранении: {e}')
+        else:
+            print("Ошибки формы:", form.errors)
+            messages.error(request, 'Проверьте форму на ошибки.')
     else:
         form = CarForm()
+
     return render(request, 'garage/add_car.html', {'form': form})
 
 @role_required(['customer'])
 def get_models(request):
     brand = request.GET.get('brand')
-    models = list(CarBase.objects.filter(brand=brand).values_list('model', flat=True).distinct())
-    return JsonResponse(models, safe=False)
+    if not brand:
+        return JsonResponse([], safe=False)
+
+    models = (
+        CarBase.objects.filter(brand=brand)
+        .values_list('model', flat=True)
+        .distinct()
+    )
+    return JsonResponse(sorted(models), safe=False)
 
 
+
+
+
+
+@role_required(['customer'])
 def get_years(request):
     brand = request.GET.get('brand')
     model = request.GET.get('model')
+    generation = request.GET.get('generation')
+    current_year = datetime.now().year
 
-    entries = CarBase.objects.filter(brand=brand, model=model)
+    queryset = CarBase.objects.filter(brand=brand, model=model)
+    if generation:
+        queryset = queryset.filter(generation=generation)
+
     years = set()
-
-    for entry in entries:
-        years.update(range(entry.year_from, entry.year_to + 1))
+    for entry in queryset:
+        end_year = entry.year_to or current_year
+        years.update(range(entry.year_from, end_year + 1))
 
     return JsonResponse({'years': sorted(years)})
+
+
+@role_required(['customer'])
+def get_generation(request):
+    brand = request.GET.get('brand')
+    model = request.GET.get('model')
+    try:
+        year = int(request.GET.get('year'))
+    except (TypeError, ValueError):
+        return JsonResponse({'generation': ''})
+
+    current_year = datetime.now().year
+
+    try:
+        car_base = CarBase.objects.filter(
+            brand=brand,
+            model=model,
+            year_from__lte=year
+        ).filter(
+            Q(year_to__gte=year) | Q(year_to__isnull=True)
+        ).first()
+
+        generation = car_base.generation if car_base else ''
+    except CarBase.DoesNotExist:
+        generation = ''
+
+    return JsonResponse({'generation': generation or ''})
+
+
+@role_required(['customer'])
 def get_engine_types(request):
     brand = request.GET.get('brand')
     model = request.GET.get('model')
@@ -84,51 +149,56 @@ def get_engine_types(request):
     except (TypeError, ValueError):
         return JsonResponse([], safe=False)
 
-    # Получаем словарь типа двигателя: ключ -> отображаемое имя
-    ENGINE_TYPE_CHOICES = dict(CarBase._meta.get_field('engine_type').choices)
+    if not (brand and model):
+        return JsonResponse([], safe=False)
 
-    engines = CarBase.objects.filter(
+    engine_types = CarBase.objects.filter(
         brand=brand,
         model=model,
-        year_from__lte=year,
-        year_to__gte=year
+        year_from__lte=year
+    ).filter(
+        Q(year_to__gte=year) | Q(year_to__isnull=True)
     ).values_list('engine_type', flat=True).distinct()
 
-    result = []
-    for engine_type in engines:
-        label = ENGINE_TYPE_CHOICES.get(engine_type, engine_type)
-        result.append([engine_type, label])
+    ENGINE_TYPE_CHOICES = dict(CarBase._meta.get_field('engine_type').choices)
 
+    result = [
+        [etype, ENGINE_TYPE_CHOICES.get(etype, etype)]
+        for etype in engine_types
+    ]
     return JsonResponse(result, safe=False)
 
 
+@role_required(['customer'])
 def get_engine_volumes(request):
     brand = request.GET.get('brand')
     model = request.GET.get('model')
-    year = request.GET.get('year')
     engine_type = request.GET.get('engine_type')
+    year = request.GET.get('year')
 
     try:
         year = int(year)
     except (TypeError, ValueError):
         return JsonResponse([], safe=False)
 
+    if not (brand and model and engine_type):
+        return JsonResponse([], safe=False)
+
     volumes = CarBase.objects.filter(
         brand=brand,
         model=model,
         engine_type=engine_type,
-        year_from__lte=year,
-        year_to__gte=year
+        year_from__lte=year
+    ).filter(
+        Q(year_to__gte=year) | Q(year_to__isnull=True)
     ).values_list('engine_volume', flat=True).distinct()
 
-    result = sorted(list(volumes))
-    return JsonResponse(result, safe=False)
-
+    return JsonResponse(sorted(volumes), safe=False)
 
 class CarDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Car
     template_name = 'garage/car_confirm_delete.html'
-    success_url = reverse_lazy('garage')  # замените на имя вашего URL с автосами
+    success_url = reverse_lazy('garage')
 
     def test_func(self):
         car = self.get_object()
@@ -218,3 +288,4 @@ class GarageDashboardView(LoginRequiredMixin, RoleRequiredMixin, TemplateView):
             ).select_related('car')
 
         return context
+

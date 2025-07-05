@@ -17,4 +17,5 @@ urlpatterns = [
     path('requests/', views.request_list, name='admin_requests'),
     path('requests/change_status/<int:request_id>/', views.change_request_status, name='change_request_status'),
     path('requests/delete/<int:request_id>/', views.delete_request, name='delete_request'),
+    path('car/', views.carbase_create_view, name='car'),
 ]
