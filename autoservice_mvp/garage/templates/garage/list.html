@@ -4,79 +4,112 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'garage/css/list.css' %}">
 <link rel="stylesheet" href="{% static 'repairs/css/requests.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 {% endblock %}
 
 {% block content %}
 <div class="garage-content">
-    <h2 class="garage-title">Мои автомобили</h2>
+  <h2 class="garage-title">Мои автомобили</h2>
 
-    {% if cars %}
-    <ul class="car-list">
-        {% for car in cars %}
-        <li class="car-item">
-            <a href="{% url 'car_detail' car.pk %}" class="car-link">
-            {{ car.base_car.brand }} {{ car.base_car.model }} ({{ car.year }}){% if car.engine_type != 'electric' and car.engine_volume %} {{ car.engine_volume }} {% endif %} {{ car.get_engine_type_display }}
-            </a>
-            <span class="mileage-badge">{{ car.mileage }} км</span>
-            <a href="{% url 'car_delete' car.pk %}"
-               class="btn btn-danger btn-sm"
-               onclick="return confirm('Вы уверены, что хотите удалить этот автомобиль?');">
-               Удалить
-            </a>
-        </li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <p class="no-cars-message">У вас пока нет автомобилей</p>
-    {% endif %}
+  {% if cars %}
+  <ul class="car-list">
+    {% for car in cars %}
+    <li class="car-item">
+      <a href="{% url 'car_detail' car.pk %}" class="car-link">
+        {{ car.base_car.brand }} {{ car.base_car.model }} ({{ car.year }})
+        {% if car.engine_type != 'electric' and car.engine_volume %}
+          {{ car.engine_volume }}
+        {% endif %}
+        {{ car.get_engine_type_display }}
+      </a>
+      <span class="mileage-badge">{{ car.mileage }} км</span>
+      <a href="{% url 'car_delete' car.pk %}" class="btn btn-danger btn-sm"
+         onclick="return confirm('Вы уверены, что хотите удалить этот автомобиль?');">
+         Удалить
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="no-cars-message">У вас пока нет автомобилей</p>
+  {% endif %}
 
-    <a href="{% url 'add_car' %}" class="btn btn-primary">Добавить авто</a>
+  <div class="garage-actions">
+    <a href="{% url 'add_car' %}" class="action-btn add-car">+ Добавить авто</a>
+    <a href="{% url 'repairs:create_request' %}" class="action-btn create-request">+ Новая заявка</a>
+  </div>
 
-    <div class="requests-section">
-        <h2 class="requests-title">Мои заявки на ремонт</h2>
+  <div class="requests-section">
+    <h2 class="requests-title">Мои заявки на ремонт</h2>
 
-        {% if repair_requests %}
-        <ul class="requests-list">
-            {% for request in repair_requests %}
-            <li class="request-item request-{{ request.status }}">
-                <div class="request-header">
-                    <span class="request-id">Заявка #{{ request.id }}</span>
-                    <span class="request-status">{{ request.get_status_display }}</span>
-                </div>
-                <p class="request-car">{{ request.car.base_car.brand }} {{ request.car.base_car.model }} ({{ request.car.year }})</p>
-                <p class="request-desc">{{ request.description|truncatechars:100 }}</p>
-                <p class="request-date">Создано: {{ request.created_at|date:"d.m.Y H:i" }}</p>
+    {% if repair_requests %}
+    <ul class="requests-list">
+      {% for request in repair_requests %}
+      <li class="request-item request-{{ request.status }}">
+        <div class="request-header">
+          <span class="request-id">Заявка #{{ request.id }}</span>
+          <span class="request-status">{{ request.get_status_display }}</span>
+        </div>
 
-                {% if request.responses.exists %}
-                <div class="responses-container">
-                    <div class="response-button-wrapper">
-                        <a href="{% url 'repairs:request_responses' request.id %}" class="responses-link">
-                            Отклики
-                            {% with new_count=request.get_new_responses_count %}
-                                {% if new_count > 0 %}
-                                <span class="new-responses-count">{{ new_count }}</span>
-                                {% endif %}
-                            {% endwith %}
-                        </a>
-                    </div>
+        <p class="request-car">
+          {{ request.car.base_car.brand }} {{ request.car.base_car.model }} ({{ request.car.year }})
+        </p>
 
-                    {% if request.has_accepted_response %}
-                        <span class="accepted-status">✓ Принято</span>
-                    {% endif %}
-                </div>
-                {% else %}
-                    <p class="no-responses">Нет ответов от автосервисов</p>
-                {% endif %}
-            </li>
-            {% endfor %}
-        </ul>
-        {% else %}
-        <p class="no-requests-message">У вас пока нет заявок</p>
+        {% if request.repair_type %}
+        <p class="request-type"><strong>Тип:</strong> {{ request.repair_type.name }}</p>
         {% endif %}
 
-        <a href="{% url 'repairs:create_request' %}" class="btn-new-request">
-            Создать новую заявку
-        </a>
+        <p class="request-desc">
+          <strong>Описание:</strong> {{ request.description|default:"(Без описания)"|linebreaksbr }}
+        </p>
+
+        <p class="request-date">Создано: {{ request.created_at|date:"d.m.Y H:i" }}</p>
+
+        <div class="request-footer">
+          <div class="responses-container">
+            {% if request.responses.exists %}
+              <a href="{% url 'repairs:request_responses' request.id %}" class="responses-link">
+                Отклики
+                {% with new_count=request.get_new_responses_count %}
+                  {% if new_count > 0 %}
+                    <span class="new-responses-badge">{{ new_count }}</span>
+                  {% endif %}
+                {% endwith %}
+              </a>
+            {% else %}
+              <span class="no-responses">Нет ответов от автосервисов</span>
+            {% endif %}
+          </div>
+
+          <div class="request-actions">
+            <a href="{% url 'repairs:edit_request' request.id %}" class="action-icon edit-icon" title="Редактировать">
+              <i class="fas fa-edit"></i>
+            </a>
+            <a href="{% url 'repairs:delete_request' request.id %}" class="action-icon delete-icon" title="Удалить"
+               onclick="return confirm('Вы уверены, что хотите удалить заявку?');">
+              <i class="fas fa-trash-alt"></i>
+            </a>
+          </div>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="no-requests-message">У вас пока нет заявок</p>
+    {% endif %}
+
+    <!-- Пагинация -->
+    <div class="pagination">
+      {% if repair_requests.has_previous %}
+        <a href="?page={{ repair_requests.previous_page_number }}" class="page-link">&laquo; Назад</a>
+      {% endif %}
+
+      <span class="page-current">Страница {{ repair_requests.number }} из {{ repair_requests.paginator.num_pages }}</span>
+
+      {% if repair_requests.has_next %}
+        <a href="?page={{ repair_requests.next_page_number }}" class="page-link">Вперед &raquo;</a>
+      {% endif %}
     </div>
+  </div>
 </div>
 {% endblock %}

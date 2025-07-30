@@ -111,7 +111,11 @@
     padding: 1.5rem;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     transition: var(--transition);
+
+    /* Оставляем только верхнюю границу */
+    border: none;
     border-top: 3px solid var(--primary);
+}
 }
 
 .request-item:hover {
@@ -335,44 +339,265 @@
     transform: translateY(0);
 }
 
-/* Стили для блока откликов */
+
+.garage-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  padding: 10px 18px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.add-car {
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #ccc;
+}
+
+.add-car:hover {
+  background-color: #e0e0e0;
+}
+
+.create-request {
+  background: linear-gradient(to right, var(--primary), var(--primary-dark));
+  color: white;
+  border: none;
+}
+
+.create-request:hover {
+  background-color: #43a047;
+}
+
+
+/* Стили для раздела заявок */
+.requests-section {
+  margin-top: 40px;
+  padding: 25px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.requests-title {
+  color: #2c3e50;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+  border-bottom: 2px solid #dee2e6;
+  padding-bottom: 10px;
+}
+
+.requests-list {
+  list-style: none;
+  padding: 0;
+}
+
+.request-item {
+  background: white;
+  border-radius: 8px;
+  padding: 18px;
+  margin-bottom: 18px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  border-left: 4px solid;
+  transition: transform 0.2s;
+}
+
+.request-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+}
+
+/* Цвета статусов */
+.request-new {
+  border-left-color: #3498db; /* синий */
+}
+
+.request-in_progress {
+  border-left-color: #f39c12; /* оранжевый */
+}
+
+.request-completed {
+  border-left-color: #2ecc71; /* зеленый */
+}
+
+.request-cancelled {
+  border-left-color: #95a5a6; /* серый */
+}
+
+.request-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.request-id {
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.request-status {
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.request-new .request-status {
+  background-color: #e1f5fe;
+  color: #0288d1;
+}
+
+.request-in_progress .request-status {
+  background-color: #fff8e1;
+  color: #ff8f00;
+}
+
+.request-completed .request-status {
+  background-color: #e8f5e9;
+  color: #388e3c;
+}
+
+.request-cancelled .request-status {
+  background-color: #eceff1;
+  color: #546e7a;
+}
+
+.request-car {
+  color: #34495e;
+  margin: 8px 0;
+  font-size: 1.05rem;
+}
+
+.request-type {
+  color: #7f8c8d;
+  margin: 5px 0;
+}
+
+.request-desc {
+  color: #34495e;
+  margin: 10px 0;
+  line-height: 1.5;
+}
+
+.request-date {
+  color: #7f8c8d;
+  font-size: 0.9rem;
+  margin-top: 10px;
+}
+
+.request-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
+}
+
 .responses-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 8px;
+  flex: 1;
 }
 
 .responses-link {
-    position: relative;
-    display: inline-block;
-    padding: 6px 12px;
-    background: #1976D2;
-    color: white;
-    text-decoration: none;
-    border-radius: 4px;
-    font-size: 14px;
+  color: #3498db;
+  text-decoration: none;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 
-.new-responses-count {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    background: #D32F2F;
-    color: white;
-    border-radius: 50%;
-    width: 18px;
-    height: 18px;
-    font-size: 11px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.responses-link:hover {
+  text-decoration: underline;
 }
 
-.accepted-status {
-    color: #388E3C;
-    font-size: 13px;
+.no-responses {
+  color: #95a5a6;
+  font-style: italic;
 }
+
+.new-responses-badge {
+  background-color: #e74c3c;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: bold;
+}
+
+.request-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.action-icon {
+  color: #7f8c8d;
+  font-size: 1.1rem;
+  transition: color 0.2s;
+  text-decoration: none;
+}
+
+.edit-icon:hover {
+  color: #3498db;
+}
+
+.delete-icon:hover {
+  color: #e74c3c;
+}
+
+.no-requests-message {
+  color: #7f8c8d;
+  font-style: italic;
+  padding: 20px;
+  text-align: center;
+  background-color: white;
+  border-radius: 6px;
+}
+
+/* Стили пагинации */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 30px;
+}
+
+.page-link {
+  padding: 5px 12px;
+  border-radius: 4px;
+  text-decoration: none;
+  color: #3498db;
+  border: 1px solid #3498db;
+  transition: all 0.2s;
+}
+
+.page-link:hover {
+  background-color: #3498db;
+  color: white;
+}
+
+.page-current {
+  color: #7f8c8d;
+  font-size: 0.95rem;
+}
+
+
+
 @media (max-width: 768px) {
     .btn-primary {
         padding: 14px 28px;  /* Еще больше для мобилок */

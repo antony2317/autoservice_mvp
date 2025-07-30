@@ -8,6 +8,55 @@
 
 {% block content %}
 <div class="repair-requests-container">
+
+    <!-- Фильтры -->
+    <form method="get" class="filter-form">
+      <div class="filters-row">
+        <div class="form-group">
+          <label for="category">Категория</label>
+          <select name="category" id="category" class="form-select">
+            <option value="">Все категории</option>
+            {% for c in categories %}
+              <option value="{{ c.id }}" {% if request.GET.category == c.id|stringformat:"s" %}selected{% endif %}>
+                {{ c.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="type">Тип ремонта</label>
+          <select name="type" id="type" class="form-select" {% if not request.GET.category %}disabled{% endif %}>
+            <option value="">Все типы</option>
+            {% for t in types %}
+              <option value="{{ t.id }}" {% if request.GET.type == t.id|stringformat:"s" %}selected{% endif %}>
+                {{ t.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="brand">Марка авто</label>
+          <select name="brand" id="brand" class="form-select">
+            <option value="">Все марки</option>
+            {% for b in brands %}
+              <option value="{{ b }}" {% if request.GET.brand == b %}selected{% endif %}>
+                {{ b }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+        <div class="buttons-container">
+          <button type="submit" class="custom-btn custom-btn-primary">Применить</button>
+          {% if request.GET %}
+            <a href="{% url 'repairs:service_dashboard' %}" class="custom-btn custom-btn-secondary">Сбросить фильтр</a>
+          {% endif %}
+        </div>
+   </form>
+
     <!-- Новые заявки -->
     <div id="new-requests" class="requests-tab-content active">
         <h2><i class="fas fa-inbox"></i> Новые заявки</h2>
@@ -21,8 +70,26 @@
                     <span class="request-date">{{ req.created_at|date:"d.m.Y H:i" }}</span>
                 </div>
                 <div class="request-body">
-                    <p><strong>Авто:</strong> {{ req.car.brand }} {{ req.car.model }}</p>
-                    <p><strong>Проблема:</strong> {{ req.description }}</p>
+                    <p><strong>Авто:</strong>
+                        {{ req.car.base_car.brand }} {{ req.car.base_car.model }}
+                        {% if req.car.base_car.generation %}{{ req.car.base_car.generation }}{% endif %}
+                        ({{ req.car.year }})
+                        {% if req.car.engine_type == 'electric' %}
+                            — {{ req.car.get_engine_type_display }}
+                        {% elif req.car.engine_volume %}
+                            — {{ req.car.engine_volume }} л, {{ req.car.get_engine_type_display }}
+                        {% endif %}
+                    </p>
+
+                    {% if req.category %}
+                        <p><strong>Категория ремонта:</strong> {{ req.category.name }}</p>
+                    {% endif %}
+                    {% if req.repair_type %}
+                        <p><strong>Тип ремонта:</strong> {{ req.repair_type.name }}</p>
+                    {% endif %}
+                    {% if req.description %}
+                        <p><strong>Описание проблемы:</strong> {{ req.description }}</p>
+                    {% endif %}
 
                     <form method="post" action="{% url 'repairs:respond_to_request' req.id %}" class="response-form">
                         {% csrf_token %}
@@ -34,9 +101,7 @@
                             <label>Дата ремонта</label>
                             <input type="date" name="proposed_date" required min="{{ today|date:'Y-m-d' }}" class="form-control">
                         </div>
-                        <button type="submit" class="btn btn-primary submit-btn">
-                            <i class="fas fa-paper-plane"></i> Отправить предложение
-                        </button>
+                        <button type="submit" class="submit-btn"><i class="fas fa-paper-plane"></i> Отправить предложение</button>
                     </form>
                 </div>
             </div>
@@ -61,8 +126,50 @@
 
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Обработка отправки форм
+document.addEventListener('DOMContentLoaded', function () {
+    const categorySelect = document.getElementById('category');
+    const typeSelect = document.getElementById('type');
+
+    async function updateRepairTypes(categoryId) {
+        typeSelect.disabled = true;
+        typeSelect.innerHTML = '<option value="">Загрузка...</option>';
+
+        try {
+            const response = await fetch(`{% url 'repairs:get_repair_types' %}?category_id=${categoryId}`);
+            const types = await response.json();
+
+            typeSelect.innerHTML = '<option value="">Все типы</option>';
+            types.forEach(t => {
+                const option = document.createElement('option');
+                option.value = t.id;
+                option.textContent = t.name;
+                if (t.id == "{{ request.GET.type|default:'' }}") {
+                    option.selected = true;
+                }
+                typeSelect.appendChild(option);
+            });
+            typeSelect.disabled = false;
+        } catch (err) {
+            typeSelect.innerHTML = '<option value="">Ошибка загрузки</option>';
+            console.error('Ошибка при получении типов ремонта:', err);
+        }
+    }
+
+    categorySelect.addEventListener('change', function () {
+        const categoryId = this.value;
+        if (categoryId) {
+            updateRepairTypes(categoryId);
+        } else {
+            typeSelect.innerHTML = '<option value="">Все типы</option>';
+            typeSelect.disabled = true;
+        }
+    });
+
+    if (categorySelect.value) {
+        updateRepairTypes(categorySelect.value);
+    }
+
+    // Модальное окно
     document.querySelectorAll('.response-form').forEach(form => {
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -94,7 +201,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     requestCard.style.opacity = '0';
                     setTimeout(() => {
                         requestCard.remove();
-
                         if (!document.querySelector('#new-requests .request-card')) {
                             document.querySelector('#new-requests .requests-list').innerHTML = `
                                 <div class="no-requests">
@@ -114,7 +220,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Функция показа модального окна
     function showModal(message, isError = false) {
         const modal = document.getElementById('notification-modal');
         const modalContent = modal.querySelector('.modal-content');
@@ -129,7 +234,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 5000);
     }
 
-    // Закрытие модального окна
     document.querySelector('.close-modal').addEventListener('click', function() {
         document.getElementById('notification-modal').style.display = 'none';
     });

@@ -16,7 +16,7 @@ body {
 }
 
 .profile-header {
-    background-color: #4CAF50;
+    background: linear-gradient(to right, var(--primary), var(--primary-dark));
     color: white;
     padding: 20px;
     text-align: center;
@@ -60,7 +60,7 @@ body {
 }
 
 .submit-btn {
-    background-color: #4CAF50;
+    background: linear-gradient(to right, var(--primary), var(--primary-dark));
     color: white;
     padding: 12px;
     width: 100%;

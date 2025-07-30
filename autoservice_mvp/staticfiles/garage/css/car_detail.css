@@ -1,0 +1,105 @@
+.car-detail-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.car-detail-container h2 {
+    color: #1e40af;
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+}
+
+.car-meta {
+    color: #64748b;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.car-detail-container h3 {
+    color: #1e40af;
+    font-size: 1.4rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.service-history {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 2rem 0;
+}
+
+.service-history li {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    border-left: 4px solid #3b82f6;
+    transition: all 0.3s ease;
+}
+
+.service-history li:hover {
+    transform: translateX(5px);
+    background: #f0f9ff;
+}
+
+.service-history li strong {
+    color: #1e40af;
+    font-size: 1.1rem;
+}
+
+.service-history li em {
+    color: #475569;
+    font-style: normal;
+}
+
+.service-history li p {
+    color: #334155;
+    margin: 0.5rem 0;
+    line-height: 1.5;
+}
+
+.cost {
+    display: inline-block;
+    background: #e0f2fe;
+    color: #0369a1;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-weight: 500;
+    margin-top: 0.5rem;
+}
+
+.no-records {
+    color: #64748b;
+    padding: 1.5rem;
+    text-align: center;
+    background: #f8fafc;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.button-group {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .car-detail-container {
+        padding: 1.5rem;
+        margin: 1rem;
+    }
+
+    .button-group {
+        flex-direction: column;
+    }
+
+    .service-history li {
+        padding: 1rem;
+    }
+}

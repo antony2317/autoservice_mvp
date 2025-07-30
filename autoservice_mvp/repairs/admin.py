@@ -3,24 +3,32 @@ from django.urls import reverse
 from django.utils.html import format_html
 from unfold.admin import ModelAdmin
 
-from .models import RepairRequest, RepairResponse
+from .models import RepairCategory, RepairType, RepairRequest, RepairResponse
+
 
 @admin.register(RepairRequest)
 class RepairRequestAdmin(ModelAdmin):
     list_display = ('id', 'user_info', 'car_info', 'status', 'formatted_status', 'created_at', 'short_description')
     list_filter = ('status', 'created_at')
-    search_fields = ('user__username', 'car__brand', 'car__model', 'description')
+    search_fields = ('user__username', 'car__base_car__brand', 'car__base_car__model', 'description')
     list_editable = ('status',)
     actions = ['mark_as_in_progress', 'mark_as_completed']
     readonly_fields = ('created_at',)
     date_hierarchy = 'created_at'
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('user', 'car', 'car__base_car')
 
     def user_info(self, obj):
         return f"{obj.user.username} ({obj.user.email})"
     user_info.short_description = 'Пользователь'
 
     def car_info(self, obj):
-        return f"{obj.car.brand} {obj.car.model} (VIN: {obj.car.vin or 'нет'})"
+        car = obj.car
+        brand = car.base_car.brand if car.base_car else "Не указано"
+        model = car.base_car.model if car.base_car else "Не указано"
+        vin_info = f" (VIN: {car.vin})" if car.vin else ""
+        return f"{brand} {model}{vin_info}"
     car_info.short_description = 'Автомобиль'
 
     def formatted_status(self, obj):
@@ -46,6 +54,7 @@ class RepairRequestAdmin(ModelAdmin):
         updated = queryset.update(status='completed')
         self.message_user(request, f"Обновлено {updated} заявок (статус: Завершена)")
     mark_as_completed.short_description = "Перевести в статус 'Завершена'"
+
 
 @admin.register(RepairResponse)
 class RepairResponseAdmin(ModelAdmin):
@@ -79,3 +88,16 @@ class RepairResponseAdmin(ModelAdmin):
         if not request.user.is_superuser:
             qs = qs.filter(service=request.user)
         return qs
+
+
+@admin.register(RepairCategory)
+class RepairCategoryAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
+    search_fields = ('name',)
+
+
+@admin.register(RepairType)
+class RepairTypeAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'category')
+    list_filter = ('category',)
+    search_fields = ('name',)

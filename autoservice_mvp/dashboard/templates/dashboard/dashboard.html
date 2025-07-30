@@ -59,6 +59,12 @@
   </div>
   <div style="margin-top: 2rem; text-align: right;">
   <a href="{% url 'dashboard:car' %}" class="btn btn-primary">➕ Добавить авто в базу</a>
-  </div>
+  <a href="{% url 'dashboard:add_repair_category' %}" class="btn btn-secondary" style="margin-left: 10px;">
+    ➕ Добавить категорию ремонта
+  </a>
+  <a href="{% url 'dashboard:add_repair_type' %}" class="btn btn-secondary" style="margin-left: 10px;">
+    ➕ Добавить тип ремонта
+  </a>
+</div>
 </div>
 {% endblock %}

@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
 from django.views.generic import ListView, CreateView, DetailView, DeleteView, UpdateView, TemplateView
@@ -35,13 +36,19 @@ class GarageView(LoginRequiredMixin, RoleRequiredMixin, ListView):
         return Car.objects.filter(user=self.request.user)
 
     def get_context_data(self, **kwargs):
-        """Добавляем заявки в контекст"""
+        """Добавляем заявки в контекст с пагинацией"""
         context = super().get_context_data(**kwargs)
 
-        context['repair_requests'] = RepairRequest.objects.filter(
+        repair_requests = RepairRequest.objects.filter(
             user=self.request.user
-        ).select_related('car').order_by('-created_at')[:5]
+        ).select_related('car').order_by('-created_at')
 
+        # Пагинация (по 5 или 10 на страницу)
+        paginator = Paginator(repair_requests, 9)
+        page_number = self.request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
+        context['repair_requests'] = page_obj  # теперь это Page объект
         return context
 
 
@@ -118,24 +125,22 @@ def get_generation(request):
     try:
         year = int(request.GET.get('year'))
     except (TypeError, ValueError):
-        return JsonResponse({'generation': ''})
+        return JsonResponse({'generations': []})
 
-    current_year = datetime.now().year
-
-    try:
-        car_base = CarBase.objects.filter(
+    generations = (
+        CarBase.objects.filter(
             brand=brand,
             model=model,
             year_from__lte=year
-        ).filter(
-            Q(year_to__gte=year) | Q(year_to__isnull=True)
-        ).first()
+        )
+        .filter(Q(year_to__gte=year) | Q(year_to__isnull=True))
+        .values_list('generation', flat=True)
+        .distinct()
+    )
 
-        generation = car_base.generation if car_base else ''
-    except CarBase.DoesNotExist:
-        generation = ''
+    generations = [g for g in generations if g]  # убираем пустые строки
 
-    return JsonResponse({'generation': generation or ''})
+    return JsonResponse({'generations': generations})
 
 
 @role_required(['customer'])

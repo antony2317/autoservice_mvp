@@ -58,17 +58,21 @@ h2 i {
     gap: 20px;
 }
 
+.requests-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+}
+
 .request-card {
+    display: flex;
+    flex-direction: column;
+    height: 480px; /* фиксированная высота */
     background: white;
     border-radius: 10px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     overflow: hidden;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.request-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
 .request-header {
@@ -78,6 +82,7 @@ h2 i {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-shrink: 0;
 }
 
 .request-user {
@@ -92,21 +97,30 @@ h2 i {
 
 .request-body {
     padding: 20px;
+    flex-grow: 1;
+    white-space: normal; /* перенос строк */
+    overflow-wrap: break-word; /* перенос слов, чтобы не ломать верстку */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
 }
 
 .request-body p {
     margin: 8px 0;
     line-height: 1.5;
-}
-
-.request-body p strong {
-    color: #2c3e50;
+    /* Не ставим никаких ограничений на высоту, текст будет переноситься */
 }
 
 .response-form {
-    margin-top: 15px;
+    margin-top: auto; /* прижать к низу карточки */
     padding-top: 15px;
     border-top: 1px dashed #ddd;
+    flex-shrink: 0;
+}
+
+.request-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
 .form-group {
@@ -133,6 +147,21 @@ h2 i {
     outline: none;
     border-color: #3498db;
     box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+
+.response-form .form-group {
+  margin-bottom: 15px; /* одинаковый отступ снизу у групп */
+}
+
+.response-form .form-control {
+  width: 100%;
+  padding: 8px 12px;   /* одинаковые внутренние отступы */
+  box-sizing: border-box;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  outline-offset: 2px;
 }
 
 .submit-btn {
@@ -219,6 +248,119 @@ h2 i {
 
 .close-modal:hover {
     color: #333;
+}
+
+.filter-form {
+  max-width: 1500px; /* ограничиваем ширину формы */
+  margin: 0 auto;
+}
+
+.filters-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  flex: 1 1 250px; /* адаптивно растягиваются, минимум 250px */
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #333;
+}
+
+.form-select {
+  padding: 6px 10px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: white;
+  transition: border-color 0.3s ease;
+}
+
+.form-select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 4px rgba(0, 123, 255, 0.5);
+}
+
+.buttons-container {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.custom-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 10px 22px;
+  min-width: 120px;
+  height: 40px; /* фиксированная высота */
+
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 2px solid transparent;
+
+  box-sizing: border-box;
+
+  cursor: pointer;
+  user-select: none;
+
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+
+  outline: none; /* убираем стандартный outline */
+}
+
+.custom-btn:focus-visible {
+  outline: 2px solid #333; /* кастомный контур для клавиатурного фокуса */
+  outline-offset: 2px;
+}
+
+.custom-btn-primary {
+  background-color: #3498db;
+  border-color: #3498db;
+  color: white;
+}
+
+.custom-btn-primary:hover,
+.custom-btn-primary:focus-visible,
+.custom-btn-primary:active {
+  background-color: #2980b9;
+  border-color: #2980b9;
+}
+
+.custom-btn-secondary {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  color: white;
+  text-decoration: none;
+}
+
+.custom-btn-secondary:hover,
+.custom-btn-secondary:focus-visible,
+.custom-btn-secondary:active {
+  background-color: #565e64;
+  border-color: #565e64;
+}
+
+
+@media (max-width: 768px) {
+    .filter-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-form .form-group,
+    .filter-form .btn {
+        width: 100%;
+    }
 }
 
 #modal-message {

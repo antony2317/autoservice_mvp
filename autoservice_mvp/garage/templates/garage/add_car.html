@@ -107,17 +107,50 @@ function toggleEngineVolumeVisibility(engineType) {
     }
 }
 
+function updateGenerationField(generations) {
+    const current = document.getElementById('id_generation');
+    let newField;
+
+    if (generations.length <= 1) {
+        newField = document.createElement('input');
+        newField.type = 'text';
+        newField.name = 'generation';
+        newField.id = 'id_generation';
+        newField.className = current.className;
+        newField.value = generations[0] || '';
+        newField.readOnly = true;
+    } else {
+        newField = document.createElement('select');
+        newField.name = 'generation';
+        newField.id = 'id_generation';
+        newField.className = current.className;
+
+        const defaultOpt = document.createElement('option');
+        defaultOpt.value = '';
+        defaultOpt.textContent = 'Выберите поколение';
+        newField.appendChild(defaultOpt);
+
+        generations.forEach(gen => {
+            const opt = document.createElement('option');
+            opt.value = gen;
+            opt.textContent = gen;
+            newField.appendChild(opt);
+        });
+    }
+
+    current.replaceWith(newField);
+}
+
 window.addEventListener('DOMContentLoaded', () => {
     const brandSelect = document.getElementById('id_brand');
     const modelSelect = document.getElementById('id_model');
     const yearSelect = document.getElementById('id_year');
-    const generationInput = document.getElementById('id_generation');
     const engineTypeSelect = document.getElementById('id_engine_type');
 
     brandSelect.addEventListener('change', () => {
         const brand = brandSelect.value;
         resetAndDisable(['model', 'year', 'engine_volume']);
-        generationInput.value = '';
+        updateGenerationField([]);
         if (!brand) return;
 
         fetch(`/garage/ajax/get-models/?brand=${encodeURIComponent(brand)}`)
@@ -138,7 +171,7 @@ window.addEventListener('DOMContentLoaded', () => {
         const brand = brandSelect.value;
         const model = modelSelect.value;
         resetAndDisable(['year', 'engine_volume']);
-        generationInput.value = '';
+        updateGenerationField([]);
         if (!(brand && model)) return;
 
         fetch(`/garage/ajax/get-years/?brand=${encodeURIComponent(brand)}&model=${encodeURIComponent(model)}`)
@@ -188,14 +221,15 @@ window.addEventListener('DOMContentLoaded', () => {
         const year = yearSelect.value;
 
         if (!(brand && model && year)) {
-            generationInput.value = '';
+            updateGenerationField([]);
             return;
         }
 
         fetch(`/garage/ajax/get-generation/?brand=${encodeURIComponent(brand)}&model=${encodeURIComponent(model)}&year=${encodeURIComponent(year)}`)
             .then(res => res.json())
             .then(data => {
-                generationInput.value = data.generation || '';
+                const generations = data.generations || [];
+                updateGenerationField(generations);
             });
     }
 
@@ -206,7 +240,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
     engineTypeSelect.addEventListener('change', updateEngineVolume);
 
-    // Инициализация видимости объема двигателя при загрузке страницы (если engine_type уже выбран)
     toggleEngineVolumeVisibility(engineTypeSelect.value);
 });
 </script>

@@ -62,12 +62,8 @@
     border-color: rgba(0, 0, 0, 0.1);
 }
 
-.request-item.request-new {
-    border-top: 3px solid #3b82f6;
-}
-.request-item.request-new::before {
-    background: #3b82f6;
-}
+
+
 
 .request-item.request-accepted {
     border-top: 3px solid #10b981;
@@ -154,12 +150,11 @@
     line-height: 1.6;
     margin: 1rem 0;
     font-size: 1rem;
-    padding-left: 1.5rem;
+
     position: relative;
 }
 
 .request-desc::before {
-    content: '»';
     position: absolute;
     left: 0;
     color: #718096;
@@ -173,7 +168,6 @@
     font-weight: 500;
     display: flex;
     align-items: center;
-    justify-content: flex-end;
     gap: 0.5rem;
 }
 

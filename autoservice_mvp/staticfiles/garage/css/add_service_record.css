@@ -1,0 +1,66 @@
+.service-form-container {
+    max-width: 700px;
+    margin: 40px auto;
+    padding: 30px 40px;
+    background-color: #fff;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.service-form-container h2 {
+    margin-bottom: 25px;
+    font-size: 28px;
+    text-align: center;
+    color: #333;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #444;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 15px;
+    background-color: #f9f9f9;
+    transition: border-color 0.3s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #4a90e2;
+    background-color: #fff;
+}
+
+input[type="date"].form-control {
+    padding: 9px 11px;
+    font-family: inherit;
+}
+
+.error-message {
+    color: #d93025;
+    font-size: 14px;
+    margin-top: 6px;
+}
+
+.form-help {
+    display: block;
+    margin-top: 4px;
+    font-size: 13px;
+    color: #777;
+}
+
+.form-actions {
+    margin-top: 30px;
+    text-align: center;
+}

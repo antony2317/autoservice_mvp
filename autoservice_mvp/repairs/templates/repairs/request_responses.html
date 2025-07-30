@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'repairs/css/repair_responses.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="repair-responses-container repair-responses-py-4">
+    <div class="repair-responses-card repair-responses-mb-4">
+        <div class="repair-responses-card-header">
+            <div class="repair-responses-header-bar repair-responses-flex repair-responses-justify-between repair-responses-align-center">
+                <h2>Отклики на заявку #{{ repair_request.id }}</h2>
+                <a href="{% url 'garage' %}" class="repair-responses-btn repair-responses-btn-light back-btn">
+                    ← Назад к заявкам
+                </a>
+            </div>
+        </div>
+
+        <div class="repair-responses-card-body">
+            <div class="repair-responses-row repair-responses-mb-4">
+                <div class="repair-responses-col-md-6">
+                    <h5>Автомобиль</h5>
+                    <p>{{ repair_request.car.brand }} {{ repair_request.car.model }}</p>
+
+                    <h5 class="repair-responses-mt-3">Описание</h5>
+                    <p>{{ repair_request.description }}</p>
+                </div>
+                <div class="repair-responses-col-md-6">
+                    <h5>Информация</h5>
+                    <p><strong>Статус:</strong>
+                        <span class="repair-responses-badge repair-responses-bg-{% if repair_request.status == 'new' %}info{% elif repair_request.status == 'in_progress' %}warning{% else %}success{% endif %}">
+                            {{ repair_request.get_status_display }}
+                        </span>
+                    </p>
+                    <p><strong>Создана:</strong> {{ repair_request.created_at|date:"d.m.Y H:i" }}</p>
+
+                    {% if repair_request.has_accepted_response %}
+                        <div class="repair-responses-alert repair-responses-alert-success repair-responses-mt-3">
+                            У вас есть принятое предложение
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <hr class="repair-responses-hr">
+
+            <h4 class="repair-responses-mb-3">Все отклики</h4>
+
+            {% if responses %}
+                <div class="repair-responses-list-group">
+                    {% for response in responses %}
+                    <div class="repair-responses-list-group-item {% if response.is_accepted %}repair-responses-list-group-item-success{% elif response.is_rejected %}repair-responses-list-group-item-light{% endif %}">
+                        <div class="repair-responses-flex repair-responses-justify-between repair-responses-align-start repair-responses-flex-wrap">
+                            <div>
+                                <h5 class="repair-responses-mb-1">
+                                    <strong>Сервис:</strong>
+                                    <a href="{% url 'services:service_detail' response.service.autoservice.id %}" class="service-card-link">
+                                        {{ response.service.username }}
+                                    </a>
+                                    {% if response.is_accepted %}
+                                        <span class="repair-responses-badge repair-responses-bg-success repair-responses-ms-2">✓ Принято</span>
+                                    {% elif response.is_rejected %}
+                                        <span class="repair-responses-badge repair-responses-bg-secondary repair-responses-ms-2">× Отклонено</span>
+                                    {% endif %}
+                                </h5>
+                                <small class="repair-responses-text-muted">
+                                    Отправлено: {{ response.created_at|date:"d.m.Y H:i" }}
+                                </small>
+                            </div>
+
+                            {% if not repair_request.has_accepted_response and not response.is_accepted and not response.is_rejected %}
+                            <div class="repair-responses-actions repair-responses-mt-2">
+                                <form method="post" action="{% url 'repairs:accept_response' response.id %}" class="repair-responses-d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="repair-responses-btn repair-responses-btn-success">
+                                        ✅ Принять
+                                    </button>
+                                </form>
+                                <form method="post" action="{% url 'repairs:reject_response' response.id %}" class="repair-responses-d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="repair-responses-btn repair-responses-btn-outline-danger">
+                                        ❌ Отклонить
+                                    </button>
+                                </form>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="repair-responses-row repair-responses-mt-3">
+                            <div class="repair-responses-col-md-4">
+                                <p><strong>Цена:</strong>
+                                    <span class="repair-responses-text-primary">{{ response.proposed_price }} ₽</span>
+                                </p>
+                            </div>
+                            <div class="repair-responses-col-md-4">
+                                <p><strong>Дата:</strong>
+                                    {{ response.proposed_date|date:"d.m.Y" }}
+                                </p>
+                            </div>
+                            <div class="repair-responses-col-md-4">
+                                <p><strong>Комментарий:</strong>
+                                    {{ response.comment|default:"-" }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="repair-responses-mt-2 repair-responses-text-end">
+                            <a href="{% url 'chat:chat_with_response' request_id=repair_request.id response_id=response.id %}"
+                               class="repair-responses-chat-button">
+                                💬 Перейти в чат с автосервисом
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="repair-responses-alert repair-responses-alert-info">
+                    Пока нет откликов на эту заявку.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

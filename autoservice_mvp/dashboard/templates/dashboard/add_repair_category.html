@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Добавить категорию ремонта{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'dashboard/css/car.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+  <h1>Добавить категорию ремонта</h1>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+
+    {% for field in form %}
+      <div class="form-group">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}
+          <small class="form-text text-muted">{{ field.help_text }}</small>
+        {% endif %}
+        {% if field.errors %}
+          <div class="error-message">
+            {% for error in field.errors %}
+              <div>{{ error }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+
+    <button type="submit" class="btn-submit">Сохранить</button>
+  </form>
+</div>
+{% endblock %}

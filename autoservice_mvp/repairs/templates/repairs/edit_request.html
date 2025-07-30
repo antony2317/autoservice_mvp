@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'repairs/css/create_request.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="repair-form-container">
+  <div class="repair-form-card">
+    <div class="form-header">
+      <h3>Редактировать заявку</h3>
+    </div>
+    <div class="form-body">
+      <form method="post">
+        {% csrf_token %}
+
+        <p><strong>Автомобиль:</strong> {{ object.car }}</p>
+
+        {{ form.car.as_hidden }}
+
+        <!-- остальные поля формы -->
+        <div class="form-group">
+          <label for="{{ form.category.id_for_label }}">Категория ремонта</label>
+          {{ form.category }}
+        </div>
+
+        <div class="form-group">
+          <label for="{{ form.repair_type.id_for_label }}">Тип ремонта</label>
+          {{ form.repair_type }}
+        </div>
+
+        <div class="form-group">
+          <label for="{{ form.description.id_for_label }}">Комментарий</label>
+          {{ form.description }}
+        </div>
+
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+        <a href="{% url 'garage' %}" class="btn btn-secondary">Отмена</a>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const categoryField = document.getElementById('id_category');
+  const typeField = document.getElementById('id_repair_type');
+  const typeContainer = document.getElementById('repair-type-container');
+  const categoryGroup = document.getElementById('category-group');
+  const descriptionField = document.getElementById('id_description');
+  const descriptionGroup = document.getElementById('description-group');
+  const problemNotListedCheckbox = document.getElementById('problem_not_listed');
+
+  // Отключаем поле типа ремонта до загрузки
+  if (!categoryField.value) {
+    typeField.disabled = true;
+  }
+
+  function smoothHide(element) {
+    element.style.overflow = 'hidden';
+    element.style.transition = 'all 0.5s ease';
+    element.style.height = element.offsetHeight + 'px';
+    requestAnimationFrame(() => {
+      element.style.height = '0';
+      element.style.opacity = '0';
+      element.style.transform = 'scaleY(0)';
+    });
+  }
+
+  function smoothShow(element) {
+    element.style.display = '';
+    element.style.overflow = 'hidden';
+    element.style.height = '0';
+    element.style.opacity = '0';
+    element.style.transform = 'scaleY(0)';
+    const finalStyles = {
+      height: element.scrollHeight + 'px',
+      opacity: '1',
+      transform: 'scaleY(1)',
+    };
+    requestAnimationFrame(() => {
+      Object.assign(element.style, finalStyles);
+      setTimeout(() => {
+        element.style.overflow = '';
+        element.style.height = '';
+      }, 500);
+    });
+  }
+
+  categoryField.addEventListener('change', function () {
+    if (problemNotListedCheckbox.checked) return;
+
+    const categoryId = this.value;
+    if (!categoryId) {
+      typeField.innerHTML = '<option value="">Выберите категорию</option>';
+      typeField.disabled = true;
+      return;
+    }
+
+    fetch("{% url 'repairs:ajax_load_types' %}?category=" + categoryId)
+      .then(response => response.json())
+      .then(data => {
+        typeField.innerHTML = '<option value="">Выберите тип ремонта</option>';
+        data.types.forEach(item => {
+          const option = document.createElement('option');
+          option.value = item.id;
+          option.textContent = item.name;
+          typeField.appendChild(option);
+        });
+        typeField.disabled = false;
+      })
+      .catch(error => console.error('Ошибка:', error));
+  });
+
+  problemNotListedCheckbox.addEventListener('change', function() {
+    if (this.checked) {
+      smoothHide(typeContainer);
+      smoothHide(categoryGroup);
+      descriptionGroup.classList.add('description-highlight');
+      descriptionField.placeholder = 'Пожалуйста, опишите проблему подробно...';
+      descriptionField.required = true;
+    } else {
+      smoothShow(typeContainer);
+      smoothShow(categoryGroup);
+      descriptionGroup.classList.remove('description-highlight');
+      descriptionField.placeholder = '';
+      descriptionField.required = false;
+
+      if (categoryField.value) {
+        const event = new Event('change');
+        categoryField.dispatchEvent(event);
+      }
+    }
+  });
+
+  // При инициализации
+  if (problemNotListedCheckbox.checked) {
+    typeContainer.style.display = 'none';
+    categoryGroup.style.display = 'none';
+    typeField.disabled = true;
+    categoryField.disabled = true;
+    descriptionGroup.classList.add('description-highlight');
+    descriptionField.placeholder = 'Пожалуйста, опишите проблему подробно...';
+    descriptionField.required = true;
+  }
+});
+</script>
+{% endblock %}

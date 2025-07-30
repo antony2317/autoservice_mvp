@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'dashboard/css/car.css' %}">
+{% endblock %}
+
+{% block content %}
+{% if messages %}
+  <div class="messages">
+    {% for message in messages %}
+      <div class="message {{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  </div>
+{% endif %}
+<div class="form-container">
+  <h2>Добавить/Изменить Авто из базы</h2>
+  <form method="post" novalidate>
+    {% csrf_token %}
+
+    {% for field in form %}
+      <div class="form-group">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}
+          <div class="help-text">{{ field.help_text }}</div>
+        {% endif %}
+        {% for error in field.errors %}
+          <div class="error-text">{{ error }}</div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+
+    <button type="submit">Сохранить</button>
+  </form>
+</div>
+{% endblock %}

@@ -1,17 +1,21 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.urls import reverse, reverse_lazy
+from django.views.generic import UpdateView, DeleteView
+
 from .forms import RepairRequestForm, RepairResponseForm
-from .models import RepairRequest, RepairResponse
-from django.views.decorators.http import require_POST
+from .models import RepairRequest, RepairResponse, RepairType, RepairCategory
+from django.views.decorators.http import require_POST, require_http_methods
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.conf import settings
 from account.decorators import service_required, role_required
 from .tasks import notify_user_about_response
 from django.utils import timezone
-from garage.models import ServiceRecord
+from garage.models import ServiceRecord, Car, CarBase
 from django.db.models import Case, When, IntegerField
 
 
@@ -21,28 +25,57 @@ def service_dashboard(request):
     if request.user.role != 'service':
         return redirect('home')
 
+    category_id = request.GET.get('category')
+    repair_type_id = request.GET.get('type')  # важно: здесь ожидается "type", а не "repair_type"
+    brand = request.GET.get('brand')
+
     new_requests = RepairRequest.objects.exclude(
         responses__service=request.user
-    ).filter(status='new').select_related('user', 'car')
+    ).filter(status='new').select_related('user', 'car', 'car__base_car', 'category', 'repair_type')
+
+    if category_id:
+        new_requests = new_requests.filter(category_id=category_id)
+
+    if repair_type_id:
+        new_requests = new_requests.filter(repair_type_id=repair_type_id)
+
+    if brand:
+        new_requests = new_requests.filter(car__base_car__brand__iexact=brand)
 
     accepted_requests = RepairResponse.objects.filter(
         service=request.user,
         is_accepted=True
     ).select_related('repair_request__user', 'repair_request__car')
 
-    if request.user.role == 'customer':
-        my_requests = RepairRequest.objects.filter(
-            user=request.user
-        ).prefetch_related('responses')
+    # Для фильтра
+    categories = RepairCategory.objects.all()
+
+    # Фильтруем типы ремонта под выбранную категорию
+    if category_id:
+        repair_types = RepairType.objects.filter(category_id=category_id)
     else:
-        my_requests = None
+        repair_types = RepairType.objects.all()
+
+    brands = CarBase.objects.values_list('brand', flat=True).distinct().order_by('brand')
 
     return render(request, 'repairs/dashboard.html', {
         'new_requests': new_requests,
         'accepted_requests': accepted_requests,
-        'my_requests': my_requests,
+        'categories': categories,
+        'repair_types': repair_types,
+        'brands': brands,
+        'selected_category': category_id,
+        'selected_type': repair_type_id,
+        'selected_brand': brand,
     })
 
+def get_repair_types_by_category(request):
+    category_id = request.GET.get('category_id')
+    if category_id:
+        types = RepairType.objects.filter(category_id=category_id).values('id', 'name')
+    else:
+        types = RepairType.objects.all().values('id', 'name')
+    return JsonResponse(list(types), safe=False)
 
 @role_required(['service'])
 @require_POST
@@ -52,8 +85,11 @@ def respond_to_request(request, request_id):
 
     if request.method == 'POST':
         if not hasattr(request.user, 'is_service') or not request.user.is_service:
-            messages.error(request, "Только сервисы могут отвечать на заявки")
-            return redirect('repairs:service_dashboard')
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'error': 'Только сервисы могут отвечать на заявки'}, status=403)
+            else:
+                messages.error(request, "Только сервисы могут отвечать на заявки")
+                return redirect('repairs:service_dashboard')
 
         try:
             response = RepairResponse(
@@ -66,8 +102,7 @@ def respond_to_request(request, request_id):
             response.full_clean()
             response.save()
 
-            print("Email пользователя:", repair_request.user.email)
-
+            # Асинхронное уведомление
             notify_user_about_response.delay(
                 user_email=repair_request.user.email,
                 service_name=request.user.username,
@@ -75,15 +110,27 @@ def respond_to_request(request, request_id):
                 date=str(response.proposed_date)
             )
 
-
-            messages.success(request, "Ваше предложение успешно отправлено!")
-            return redirect('repairs:service_dashboard')
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': True})
+            else:
+                messages.success(request, "Ваше предложение успешно отправлено!")
+                return redirect('repairs:service_dashboard')
 
         except ValidationError as e:
-            messages.error(request, f"Ошибка валидации: {e}")
-        except Exception as e:
-            messages.error(request, f"Произошла ошибка: {str(e)}")
+            error_msg = f"Ошибка валидации: {e}"
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'error': error_msg}, status=400)
+            else:
+                messages.error(request, error_msg)
 
+        except Exception as e:
+            error_msg = f"Произошла ошибка: {str(e)}"
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'error': error_msg}, status=500)
+            else:
+                messages.error(request, error_msg)
+
+    # Для не-POST запросов — редирект
     return redirect('repairs:service_dashboard')
 
 
@@ -148,18 +195,77 @@ def change_request_status(request, request_id):
 
 @role_required(['customer'])
 @login_required
+@require_http_methods(["GET", "POST"])
 def create_request(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    user_cars = Car.objects.filter(user=request.user)
+
     if request.method == 'POST':
         form = RepairRequestForm(request.POST, user=request.user)
         if form.is_valid():
             repair_request = form.save(commit=False)
             repair_request.user = request.user
             repair_request.save()
+
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'redirect_url': reverse('garage')
+                })
             return redirect('garage')
+
+        # Если форма не валидна и это AJAX
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'errors': form.errors.get_json_data()
+            })
     else:
         form = RepairRequestForm(user=request.user)
+        if user_cars.count() == 1:
+            form.fields['car'].initial = user_cars.first().id
 
-    return render(request, 'repairs/create_request.html', {'form': form})
+    return render(request, 'repairs/create_request.html', {
+        'form': form,
+        'user_cars': user_cars,
+    })
+
+
+def load_repair_types(request):
+    category_id = request.GET.get('category')
+    if category_id:
+        types = RepairType.objects.filter(category_id=category_id).order_by('name')
+        types_list = [{'id': t.id, 'name': t.name} for t in types]
+        return JsonResponse({'types': types_list})
+    else:
+        return JsonResponse({'types': []})
+
+
+class EditRepairRequestView(LoginRequiredMixin, UpdateView):
+    model = RepairRequest
+    form_class = RepairRequestForm
+    template_name = 'repairs/edit_request.html'
+
+    def get_queryset(self):
+        return self.model.objects.filter(user=self.request.user)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def get_success_url(self):
+        return reverse_lazy('garage')
+
+class DeleteRepairRequestView(LoginRequiredMixin, DeleteView):
+    model = RepairRequest
+    template_name = 'repairs/delete_confirm.html'
+    success_url = reverse_lazy('garage')
+
+    def get_queryset(self):
+        return self.model.objects.filter(user=self.request.user)
 
 
 @role_required(['service'])

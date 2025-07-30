@@ -4,6 +4,38 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
+
+class RepairCategory(models.Model):
+    name = models.CharField(max_length=100, unique=True, verbose_name='Категория ремонта')
+
+    class Meta:
+        verbose_name = 'Категория ремонта'
+        verbose_name_plural = 'Категории ремонта'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+class RepairType(models.Model):
+    category = models.ForeignKey(
+        RepairCategory,
+        on_delete=models.CASCADE,
+        related_name='repair_types',
+        verbose_name='Категория'
+    )
+    name = models.CharField(max_length=100, verbose_name='Тип ремонта')
+
+    class Meta:
+        verbose_name = 'Тип ремонта'
+        verbose_name_plural = 'Типы ремонта'
+        unique_together = ('category', 'name')
+        ordering = ['category__name', 'name']
+
+    def __str__(self):
+        return f"{self.category.name} — {self.name}"
+
+
 class RepairRequest(models.Model):
     STATUS_CHOICES = [
         ('new', 'Новая'),
@@ -19,12 +51,27 @@ class RepairRequest(models.Model):
         verbose_name='Пользователь'
     )
     car = models.ForeignKey(
-        'garage.Car',  # Используем строковую ссылку с указанием приложения
+        'garage.Car',
         on_delete=models.CASCADE,
         related_name='repair_requests',
         verbose_name='Автомобиль'
     )
-    description = models.TextField('Описание проблемы')
+    # Временный null=True
+    category = models.ForeignKey(
+        RepairCategory,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        verbose_name='Категория ремонта'
+    )
+    repair_type = models.ForeignKey(
+        RepairType,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        verbose_name='Тип ремонта'
+    )
+    description = models.TextField('Дополнительное описание', blank=True)
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
@@ -32,13 +79,14 @@ class RepairRequest(models.Model):
         verbose_name='Статус'
     )
     executor = models.ForeignKey(
-        'account.AutoService',  # Используем строковую ссылку с указанием приложения
+        'account.AutoService',
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
         related_name='assigned_requests',
         verbose_name='Исполнитель'
     )
+    problem_not_listed = models.BooleanField(default=False, verbose_name='Проблема не указана в списке')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Дата обновления')
 
@@ -56,33 +104,30 @@ class RepairRequest(models.Model):
 
     @property
     def has_accepted_response(self):
-        """Проверяет, есть ли принятый отклик на заявку"""
         return self.responses.filter(is_accepted=True).exists()
 
     def get_new_responses_count(self):
-        """Возвращает количество новых (непросмотренных) откликов"""
         return self.responses.filter(is_new=True).count()
 
     def mark_responses_as_viewed(self):
-        """Помечает все отклики на эту заявку как просмотренные"""
         updated = self.responses.filter(is_new=True).update(is_new=False)
         return updated > 0
 
     def get_accepted_response(self):
-        """Возвращает принятый отклик (если есть)"""
         return self.responses.filter(is_accepted=True).first()
 
     def get_active_responses(self):
-        """Возвращает активные (не отклоненные) отклики"""
         return self.responses.filter(is_rejected=False)
 
     def can_accept_responses(self):
-        """Проверяет, можно ли принимать новые отклики"""
         return self.status == 'new' and not self.has_accepted_response
 
     def clean(self):
-        """Валидация модели"""
         super().clean()
+
+        if self.category and self.repair_type:
+            if self.repair_type.category_id != self.category_id:
+                raise ValidationError("Выбранный тип ремонта не относится к указанной категории.")
 
         if self.executor and not hasattr(self.executor, 'autoservice'):
             raise ValidationError("Исполнителем может быть только автосервис")
@@ -91,7 +136,6 @@ class RepairRequest(models.Model):
             raise ValidationError("Нельзя завершить заявку без принятого отклика")
 
     def save(self, *args, **kwargs):
-        """Переопределение метода save для автоматической валидации"""
         self.full_clean()
         super().save(*args, **kwargs)
 
@@ -113,8 +157,8 @@ class RepairResponse(models.Model):
     proposed_price = models.DecimalField(
         max_digits=12,
         decimal_places=2,
-        verbose_name='Предложенная цена',
-        validators=[MinValueValidator(0.01)]
+        validators=[MinValueValidator(0.01)],
+        verbose_name='Предложенная цена'
     )
     proposed_date = models.DateField(verbose_name='Предложенная дата ремонта')
     comment = models.TextField('Комментарий сервиса', blank=True)
@@ -143,7 +187,6 @@ class RepairResponse(models.Model):
         return f"Ответ от {self.service.username} на заявку #{self.repair_request.id}"
 
     def clean(self):
-        """Валидация модели"""
         super().clean()
 
         if self.proposed_date and self.proposed_date < timezone.now().date():
@@ -156,12 +199,10 @@ class RepairResponse(models.Model):
             raise ValidationError("У заявки уже есть принятый отклик")
 
     def save(self, *args, **kwargs):
-        """Переопределение метода save"""
         self.full_clean()
         super().save(*args, **kwargs)
 
         if self.is_accepted:
-            # Обновляем исполнителя заявки при принятии отклика
             self.repair_request.executor = self.service.autoservice
             self.repair_request.status = 'in_progress'
             self.repair_request.save()

@@ -7,11 +7,12 @@ from django.views.generic import CreateView
 from repairs.models import RepairRequest
 from django.contrib.auth import get_user_model
 from django.db.models import Case, When, Value, IntegerField
+from django.contrib.admin.views.decorators import staff_member_required
 
 
 from account.decorators import role_required
 
-from .forms import CarBaseForm
+from .forms import CarBaseForm, RepairCategoryForm, RepairTypeForm
 
 
 def is_admin(user):
@@ -165,3 +166,30 @@ def carbase_create_view(request):
         form = CarBaseForm()
 
     return render(request, 'dashboard/add_car.html', {'form': form})
+
+
+
+@staff_member_required
+def add_repair_category(request):
+    if request.method == 'POST':
+        form = RepairCategoryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('dashboard:add_repair_category')  # или куда хотите редиректить
+    else:
+        form = RepairCategoryForm()
+
+    return render(request, 'dashboard/add_repair_category.html', {'form': form})
+
+
+@staff_member_required
+def add_repair_type(request):
+    if request.method == 'POST':
+        form = RepairTypeForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('dashboard:add_repair_type')
+    else:
+        form = RepairTypeForm()
+
+    return render(request, 'dashboard/add_repair_type.html', {'form': form})

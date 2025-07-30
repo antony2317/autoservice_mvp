@@ -11,6 +11,9 @@ urlpatterns = [
     path('respond/<int:request_id>/', views.respond_to_request, name='respond_to_request'),
     #path('updates/', views.request_updates, name='request_updates'),
     path('create/', views.create_request, name='create_request'),
+    path('<int:pk>/edit/', views.EditRepairRequestView.as_view(), name='edit_request'),
+    path('<int:pk>/delete/', views.DeleteRepairRequestView.as_view(), name='delete_request'),
+    path('ajax/load-types/', views.load_repair_types, name='ajax_load_types'),
     path('accepted/', views.service_accepted_requests, name='accepted_requests'),
     path('confirm/<int:response_id>/', views.confirm_response, name='confirm_response'),
     path('confirm-response/<int:response_id>/', views.confirm_response, name='confirm_response'),
@@ -18,7 +21,8 @@ urlpatterns = [
     path('accept/<int:response_id>/', views.accept_response, name='accept_response'),
     path('response/<int:request_id>/change-status/', views.change_request_status, name='change_status'),
     path('requests/<int:request_id>/responses/', views.request_responses, name='request_responses'),
-path('responses/<int:response_id>/reject/', views.reject_response, name='reject_response'),
+    path('responses/<int:response_id>/reject/', views.reject_response, name='reject_response'),
+    path('ajax/repair-types/', views.get_repair_types_by_category, name='get_repair_types'),
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
